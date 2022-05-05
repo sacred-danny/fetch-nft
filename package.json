@@ -1,7 +1,7 @@
 {
-  "name": "@audius/fetch-nft",
-  "version": "0.1.6",
-  "author": "Audius",
+  "name": "@danny-jin/fetch-nft",
+  "version": "0.0.2",
+  "author": "Danny Jin",
   "description": "A utility to fetch Ethereum & Solana NFTs",
   "files": [
     "dist"

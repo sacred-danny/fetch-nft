@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 
-import { FetchNFTClient } from '@audius/fetch-nft'
+import { FetchNFTClient } from '@danny-jin/fetch-nft'
 
 // Initialize fetch client
 const fetchClient = new FetchNFTClient()

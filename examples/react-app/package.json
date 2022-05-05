@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@audius/fetch-nft": "file:../../",
+    "@danny-jin/fetch-nft": "file:../../",
     "@solana/spl-token": "^0.1.8",
     "@solana/web3.js": "^1.31.0",
     "@testing-library/jest-dom": "^5.15.1",

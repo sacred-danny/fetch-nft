@@ -37,7 +37,7 @@ export class SolanaClient {
    * - find the metadata PDAs for the mint addresses
    * - get the account infos for the PDAs if they exist
    * - get the metadata urls from the account infos and fetch the metadatas
-   * - transform the nft metadatas to Audius-domain collectibles
+   * - transform the nft metadatas to Danny Jin domain collectibles
    */
   public getAllCollectibles = async (wallets: string[]): Promise<CollectibleState> => {
     try {

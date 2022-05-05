@@ -1,6 +1,6 @@
 <p align="center">
   <p align="center">
-    <b>@audius/fetch-nft</b>
+    <b>@danny-jin/fetch-nft</b>
   </p>
   <p align="center">
     🖼🎑🌠
@@ -9,7 +9,7 @@
     A utility to fetch and easily display Ethereum & Solana NFTs in a common format given any wallet.
   </p>
   <p align="center">
-    built with ❤️ from the team <a href="https://audius.org">@Audius</a>.
+    built by <a href="https://github.com/danny-jin">Danny Jin</a>.
   </p>
 </p>
 
@@ -22,12 +22,12 @@
 # install peer dependencies if not already in your project
 npm install @solana/spl-token @solana/web3.js
 
-npm install @audius/fetch-nft
+npm install @danny-jin/fetch-nft
 ```
 
 # Basic Usage
 ```ts
-import { FetchNFTClient } from '@audius/fetch-nft'
+import { FetchNFTClient } from '@danny-jin/fetch-nft'
 
 // Initialize fetch client
 const fetchClient = new FetchNFTClient()
@@ -118,7 +118,7 @@ type CollectibleState = {
 
 # Usage with Configs
 ```ts
-import { FetchNFTClient } from '@audius/fetch-nft'
+import { FetchNFTClient } from '@danny-jin/fetch-nft'
 
 // Open Sea Config
 const openSeaConfig = {
