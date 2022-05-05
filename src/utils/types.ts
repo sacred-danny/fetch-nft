@@ -23,6 +23,8 @@ export type Collectible = {
   assetContractAddress: Nullable<string>
   chain: Chain
   wallet: string
+  collection?: any
+  owner?: any
 }
 
 export type CollectibleState = {

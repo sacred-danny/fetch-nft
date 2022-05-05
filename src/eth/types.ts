@@ -50,6 +50,7 @@ export type OpenSeaAsset = {
   owner: Nullable<AssetOwner>
   creator: Nullable<AssetCreator>
   asset_contract: Nullable<AssetContract>
+  collection: Nullable<any>
 }
 
 export type OpenSeaAssetExtended = OpenSeaAsset & { wallet: string }

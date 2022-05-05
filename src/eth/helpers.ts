@@ -221,7 +221,9 @@ export const assetToCollectible = async (
     permaLink: asset.permalink,
     assetContractAddress: asset.asset_contract?.address ?? null,
     chain: 'eth',
-    wallet: asset.wallet
+    owner: asset.owner,
+    wallet: asset.wallet,
+    collection: asset.collection
   }
 }
 
