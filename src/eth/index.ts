@@ -142,7 +142,11 @@ export class OpenSeaClient {
       name: result.collection.name || '',
       slug: result.collection.slug || '',
       imageUrl: result.collection.image_url || '',
-      contractAddress: (result.collection.primary_asset_contracts || []).reduce((prev: any, current: any) =>  (prev?.address || '') + `${prev?.address ? ',' : ''}` + (current?.address || ''), "") || ''
+      contractAddress: (result.collection.primary_asset_contracts || []).reduce((prev: any, current: any) =>  (prev?.address || '') + `${prev?.address ? ',' : ''}` + (current?.address || ''), "") || '',
+      openListingCount: 0,
+      closeListingCount: 0,
+      openLoanCount: 0,
+      closeLoanCount: 0
     }
   }
 
