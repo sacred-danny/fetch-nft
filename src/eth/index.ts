@@ -136,8 +136,8 @@ export class OpenSeaClient {
     ).then(results => parseAssetResults(results, wallets))
   }
 
-  public getCollection = async (slug: string): Promise<CollectionInfo> => {
-    const result = await this.sendGetRequest(`${this.url}/collection/${slug}`);
+  public getCollection = async (assetContractAddress: string, tokenId: string): Promise<CollectionInfo> => {
+    const result = await this.sendGetRequest(`${this.url}/asset/${assetContractAddress}/${tokenId}`);
     return {
       name: result.collection.name,
       slug: result.collection.slug,

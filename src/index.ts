@@ -22,8 +22,8 @@ export class FetchNFTClient {
     wallets.length ? await this.ethClient.getAllCollectibles(wallets) : {}
   )
 
-  public getEthereumCollection = async (slug: string): Promise<CollectionInfo> => {
-    return await this.ethClient.getCollection(slug);
+  public getEthereumCollection = async (assetContractAddress: string, tokenId: string): Promise<CollectionInfo> => {
+    return await this.ethClient.getCollection(assetContractAddress, tokenId);
   }
 
   public getSolanaCollectibles = async (wallets: string[]): Promise<CollectibleState> => (
