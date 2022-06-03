@@ -12,7 +12,7 @@ import {
   OpenSeaEvent,
   OpenSeaEventExtended
 } from 'eth/types'
-import { Collectible, CollectibleState } from 'utils/types'
+import {Collectible, CollectibleState, CollectionInfo} from 'utils/types'
 
 const OPENSEA_API_URL = 'https://api.opensea.io/api/v1'
 
@@ -134,6 +134,16 @@ export class OpenSeaClient {
     return Promise.allSettled(
       wallets.map(wallet => this.getCollectiblesForWallet(wallet, limit))
     ).then(results => parseAssetResults(results, wallets))
+  }
+
+  public getCollection = async (slug: string): Promise<CollectionInfo> => {
+    const result = await this.sendGetRequest(`${this.url}/collection/${slug}`);
+    return {
+      name: result.collection.name,
+      slug: result.collection.slug,
+      imageUrl: result.collection.image_url,
+      contractAddress: (result.collection.primary_asset_contracts || []).reduce((prev: any, current: any) =>  (prev?.address || '') + `${prev?.address ? ',' : ''}` + (current?.address || ''), "")
+    }
   }
 
   public getAllCollectibles = async (wallets: string[]): Promise<CollectibleState> => {

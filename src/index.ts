@@ -1,6 +1,6 @@
 import { OpenSeaClient, OpenSeaClientProps } from 'eth'
 import { SolanaClient, SolanaClientProps } from 'sol'
-import { Collectible, CollectibleState } from 'utils/types'
+import {Collectible, CollectibleState, CollectionInfo} from 'utils/types'
 
 import 'cross-fetch/polyfill'
 
@@ -21,6 +21,10 @@ export class FetchNFTClient {
   public getEthereumCollectibles = async (wallets: string[]): Promise<CollectibleState> => (
     wallets.length ? await this.ethClient.getAllCollectibles(wallets) : {}
   )
+
+  public getEthereumCollection = async (slug: string): Promise<CollectionInfo> => {
+    return await this.ethClient.getCollection(slug);
+  }
 
   public getSolanaCollectibles = async (wallets: string[]): Promise<CollectibleState> => (
     wallets.length ? await this.solClient.getAllCollectibles(wallets) : {}

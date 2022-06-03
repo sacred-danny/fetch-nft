@@ -27,6 +27,13 @@ export type Collectible = {
   owner?: any
 }
 
+export type CollectionInfo = {
+  name: Nullable<string>
+  slug: Nullable<string>
+  imageUrl: Nullable<string>
+  contractAddress: Nullable<string>
+}
+
 export type CollectibleState = {
   [wallet: string]: Collectible[]
 }
