@@ -28,10 +28,10 @@ export type Collectible = {
 }
 
 export type CollectionInfo = {
-  name: Nullable<string>
-  slug: Nullable<string>
-  imageUrl: Nullable<string>
-  contractAddress: Nullable<string>
+  name: string
+  slug: string
+  imageUrl: string
+  contractAddress: string
 }
 
 export type CollectibleState = {

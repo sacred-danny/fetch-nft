@@ -139,10 +139,10 @@ export class OpenSeaClient {
   public getCollection = async (assetContractAddress: string, tokenId: string): Promise<CollectionInfo> => {
     const result = await this.sendGetRequest(`${this.url}/asset/${assetContractAddress}/${tokenId}`);
     return {
-      name: result.collection.name,
-      slug: result.collection.slug,
-      imageUrl: result.collection.image_url,
-      contractAddress: (result.collection.primary_asset_contracts || []).reduce((prev: any, current: any) =>  (prev?.address || '') + `${prev?.address ? ',' : ''}` + (current?.address || ''), "")
+      name: result.collection.name || '',
+      slug: result.collection.slug || '',
+      imageUrl: result.collection.image_url || '',
+      contractAddress: (result.collection.primary_asset_contracts || []).reduce((prev: any, current: any) =>  (prev?.address || '') + `${prev?.address ? ',' : ''}` + (current?.address || ''), "") || ''
     }
   }
 
