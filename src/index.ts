@@ -50,4 +50,4 @@ export class FetchNFTClient {
   }
 }
 
-export { Collectible, CollectibleState }
+export { Collectible, CollectibleState, CollectionInfo }
