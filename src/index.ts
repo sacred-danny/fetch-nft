@@ -26,6 +26,10 @@ export class FetchNFTClient {
     return await this.ethClient.getCollection(assetContractAddress, tokenId);
   }
 
+  public getEthereumAssetOwner = async (assetContractAddress: string, tokenId: string): Promise<string> => {
+    return await this.ethClient.getAssetOwner(assetContractAddress, tokenId);
+  }
+
   public getSolanaCollectibles = async (wallets: string[]): Promise<CollectibleState> => (
     wallets.length ? await this.solClient.getAllCollectibles(wallets) : {}
   )

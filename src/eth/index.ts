@@ -150,6 +150,11 @@ export class OpenSeaClient {
     }
   }
 
+  public getAssetOwner = async (assetContractAddress: string, tokenId: string): Promise<string> => {
+    const result = await this.sendGetRequest(`${this.url}/asset/${assetContractAddress}/${tokenId}`);
+    return result?.owner?.address || null;
+  }
+
   public getAllCollectibles = async (wallets: string[]): Promise<CollectibleState> => {
     return Promise.all([
       this.getCollectiblesForMultipleWallets(wallets),
