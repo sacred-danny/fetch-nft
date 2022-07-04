@@ -32,10 +32,11 @@ export type CollectionInfo = {
   slug: string
   imageUrl: string
   contractAddress: string
+  safeListRequestStatus: string
   openListingCount?: number
-  closeListingCount?: number;
-  openLoanCount?: number;
-  closeLoanCount?: number;
+  closeListingCount?: number
+  openLoanCount?: number
+  closeLoanCount?: number
 }
 
 export type CollectibleState = {
