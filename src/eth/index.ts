@@ -60,7 +60,7 @@ export type OpenSeaClientProps = {
 export class OpenSeaClient {
   readonly url: string = OPENSEA_API_URL
   readonly apiKey: string = ''
-  readonly assetLimit: number = 50
+  readonly assetLimit: number = 200
   readonly eventLimit: number = 300
 
   constructor(props?: OpenSeaClientProps) {
