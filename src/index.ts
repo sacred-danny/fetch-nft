@@ -38,7 +38,7 @@ export class FetchNFTClient {
   }
 
   public getEthereumAssetOwner = async (assetContractAddress: string, tokenId: string): Promise<string> => {
-    return await this.ethClient.getAssetOwner(assetContractAddress, tokenId);
+    return await this.nftPortClient.getAssetOwner(assetContractAddress, tokenId);
   }
 
   public getSolanaCollectibles = async (wallets: string[]): Promise<CollectibleState> => (

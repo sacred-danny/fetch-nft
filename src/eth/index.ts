@@ -374,5 +374,12 @@ export class NftPortClient {
     }
   };
 
+  public getAssetOwner = async (assetContractAddress: string, tokenId: string): Promise<string> => {
+    const result = await this.sendGetRequest(`${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}`);
+    if (result && result.owner) {
+      return result?.owner;
+    }
+    return null;
+  };
 
 }
