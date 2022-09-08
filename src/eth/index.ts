@@ -348,15 +348,19 @@ export class NftPortClient {
     let continuation = null;
     try {
       while (1) {
-        const item: any = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}?chain=${this.chain}&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}`);
-        if (!item || (item && !item.nfts) || (item && item.nfts && item.nfts.length === 0)) {
+        try {
+          const item: any = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}?chain=${this.chain}&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}`);
+          if (!item || (item && !item.nfts) || (item && item.nfts && item.nfts.length === 0)) {
+            break;
+          }
+          result = [...result, ...item.nfts];
+          if (!item.continuation) {
+            break;
+          }
+          continuation = item.continuation;
+        } catch (e) {
           break;
         }
-        result = [...result, ...item.nfts];
-        if (item.continuation) {
-          break;
-        }
-        continuation = item.continuation;
       }
     } catch (e) {
       console.log(e);
