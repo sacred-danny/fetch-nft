@@ -46,7 +46,7 @@ export type NftPortCollectionInfoPaginationDto = {
 
 export type CollectionInfo = {
   name: string
-  slug?: string
+  slug: string
   imageUrl: string
   contractAddress: string
   safeListRequestStatus?: string

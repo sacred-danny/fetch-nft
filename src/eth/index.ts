@@ -226,11 +226,11 @@ export class OpenSeaClient {
         }
         result = [...result, ...response.map((item: any) => {
           return {
-            name: item.name,
-            slug: item?.slug,
-            imageUrl: item?.image_url,
+            name: item.name || '',
+            slug: item?.slug || '',
+            imageUrl: item?.image_url|| '',
             contractAddress: (item?.primary_asset_contracts || []).reduce((prev: any, current: any) => (prev?.address || '') + `${prev?.address ? ',' : ''}` + (current?.address || ''), '') || '',
-            safeListRequestStatus: item?.safelist_request_status,
+            safeListRequestStatus: item?.safelist_request_status || '',
           }
         })];
         offset += limit;
@@ -469,11 +469,11 @@ export class NftPortClient {
       }
       const data = item?.contracts.map((item: any) => {
         return {
-          name: item.name,
-          slug: item?.slug || null,
-          imageUrl: item?.metadata?.thumbnail_url || null,
-          contractAddress: item?.address,
-          safeListRequestStatus: item?.safelist_request_status || null,
+          name: item.name || '',
+          slug: item?.slug || '',
+          imageUrl: item?.metadata?.thumbnail_url || '',
+          contractAddress: item?.address || '',
+          safeListRequestStatus: item?.safelist_request_status || '',
         }
       });
       return {
