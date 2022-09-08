@@ -1,6 +1,6 @@
 {
   "name": "@danny-jin/fetch-nft",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "author": "Danny Jin",
   "description": "A utility to fetch Ethereum & Solana NFTs",
   "files": [

@@ -27,6 +27,11 @@ export type Collectible = {
   owner?: any
 }
 
+export type NftPortCollectible = {
+  tokenId: string
+  assetContractAddress: Nullable<string>
+}
+
 export type CollectionInfo = {
   name: string
   slug: string
@@ -42,3 +47,4 @@ export type CollectionInfo = {
 export type CollectibleState = {
   [wallet: string]: Collectible[]
 }
+
