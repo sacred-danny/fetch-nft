@@ -1,6 +1,11 @@
 import { OpenSeaClient, OpenSeaClientProps, NftPortClientProps, NftPortClient } from 'eth';
 import { SolanaClient, SolanaClientProps } from 'sol'
-import {Collectible, CollectibleState, CollectionInfo, NftPortCollectible} from 'utils/types'
+import {
+  Collectible,
+  CollectibleState,
+  CollectionInfo,
+  NftPortCollectiblePaginationDto,
+} from 'utils/types';
 
 import 'cross-fetch/polyfill'
 
@@ -25,20 +30,34 @@ export class FetchNFTClient {
     wallets.length ? await this.ethClient.getAllCollectibles(wallets) : {}
   )
 
+  public getEthereumCollectiblesByContractAddressesAndTokenIds = async (wallet: string, contractAddresses: string[], tokenIds: string[]): Promise<Collectible[]> => (
+    wallet ? await this.ethClient.getCollectiblesForWalletByContractAddressesAndTokenIds(wallet, contractAddresses, tokenIds) : null
+  )
+
   public getEthereumCollection = async (assetContractAddress: string, tokenId: string): Promise<CollectionInfo> => {
     return await this.ethClient.getCollection(assetContractAddress, tokenId);
+  }
+
+  public getAllCollectionsFromOpensea = async (wallet: string): Promise<CollectionInfo[]> => {
+    return await this.ethClient.getAllCollections(wallet);
+  }
+
+  public getCollectionsFromNftPort = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectiblePaginationDto> => {
+    return await this.nftPortClient.getCollections(wallet, limit, continuation);
   }
 
   public getEthereumAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
     return await this.ethClient.getAssetDetail(assetContractAddress, tokenId);
   }
 
-  public getAllNftsFromNftPort = async (wallet: string): Promise<NftPortCollectible[]> => {
-    return await this.nftPortClient.getAllNfts(wallet);
+  public getNftsFromNftPort = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectiblePaginationDto> => {
+    return await this.nftPortClient.getNfts(wallet, limit, continuation);
   }
 
   public getEthereumAssetOwner = async (assetContractAddress: string, tokenId: string): Promise<string> => {
-    return await this.nftPortClient.getAssetOwner(assetContractAddress, tokenId);
+    const nftPortOwner = await this.nftPortClient.getAssetOwner(assetContractAddress, tokenId);
+    const openSeaOwner = await this.ethClient.getAssetOwner(assetContractAddress, tokenId);
+    return nftPortOwner || openSeaOwner;
   }
 
   public getSolanaCollectibles = async (wallets: string[]): Promise<CollectibleState> => (

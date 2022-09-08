@@ -32,12 +32,24 @@ export type NftPortCollectible = {
   assetContractAddress: Nullable<string>
 }
 
+export type NftPortCollectiblePaginationDto = {
+  data: NftPortCollectible[],
+  continuation?: string,
+  count: number;
+}
+
+export type NftPortCollectionInfoPaginationDto = {
+  data: CollectionInfo[],
+  continuation?: string,
+  count: number;
+}
+
 export type CollectionInfo = {
   name: string
-  slug: string
+  slug?: string
   imageUrl: string
   contractAddress: string
-  safeListRequestStatus: string
+  safeListRequestStatus?: string
   openListingCount?: number
   closeListingCount?: number
   openLoanCount?: number
