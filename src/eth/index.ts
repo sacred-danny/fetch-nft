@@ -420,11 +420,12 @@ export class NftPortClient {
 
   public getNfts = async (
     wallet: string,
+    contractAddress: string,
     limit = this.assetLimit,
     continuation: string
   ): Promise<NftPortCollectiblePaginationDto> => {
     try {
-      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}?chain=${this.chain}&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}`);
+      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}?chain=${this.chain}&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
       if (!item || (item && !item?.nfts) || (item && item?.nfts && item.nfts?.length === 0)) {
         return {
           data: [],
@@ -453,41 +454,32 @@ export class NftPortClient {
     }
   };
 
-  public getCollections = async (
-    wallet: string,
-    limit = this.assetLimit,
-    continuation: string
-  ): Promise<NftPortCollectiblePaginationDto> => {
+  public getAllCollections = async (wallet: string): Promise<CollectionInfo[]> => {
     try {
-      const item = await this.sendGetRequest(`${this.url}/v0/accounts/contracts/${wallet}?chain=${this.chain}&type=owns_contract_nfts&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}`);
-      if (!item || (item && !item?.contracts) || (item && item?.contracts && item?.contracts.length === 0)) {
-        return {
-          data: [],
-          continuation: null,
-          count: 0
-        };
-      }
-      const data = item?.contracts.map((item: any) => {
-        return {
-          name: item.name || '',
-          slug: item?.slug || '',
-          imageUrl: item?.metadata?.thumbnail_url || '',
-          contractAddress: item?.address || '',
-          safeListRequestStatus: item?.safelist_request_status || '',
+      let result = [];
+      let continuation = null;
+      while (1) {
+        const item = await this.sendGetRequest(`${this.url}/v0/accounts/contracts/${wallet}?chain=${this.chain}&type=owns_contract_nfts&page_size=${this.assetLimit}${continuation ? ('&continuation=' + continuation) : ''}`);
+        if (!item || (item && !item?.contracts) || (item && item?.contracts && item?.contracts.length === 0)) {
+          break;
         }
-      });
-      return {
-        data,
-        continuation: item.continuation,
-        count: item.total
-      };
+        result = [...result, item?.contracts.map((item: any) => {
+          return {
+            name: item.name || '',
+            slug: item?.slug || '',
+            imageUrl: item?.metadata?.thumbnail_url || '',
+            contractAddress: (item?.address || '').toLowerCase(),
+            safeListRequestStatus: item?.safelist_request_status || '',
+          }
+        })];
+        if (!item.continuation) {
+          break;
+        }
+      }
+      return result;
     } catch (e) {
       console.log(e);
-      return {
-        data: [],
-        continuation: null,
-        count: 0
-      };
+      return [];
     }
   };
 

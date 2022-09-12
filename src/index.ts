@@ -42,16 +42,16 @@ export class FetchNFTClient {
     return await this.ethClient.getAllCollections(wallet);
   }
 
-  public getCollectionsFromNftPort = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectiblePaginationDto> => {
-    return await this.nftPortClient.getCollections(wallet, limit, continuation);
+  public getAllCollectionsFromNftPort = async (wallet: string): Promise<CollectionInfo[]> => {
+    return await this.nftPortClient.getAllCollections(wallet);
   }
 
   public getEthereumAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
     return await this.ethClient.getAssetDetail(assetContractAddress, tokenId);
   }
 
-  public getNftsFromNftPort = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectiblePaginationDto> => {
-    return await this.nftPortClient.getNfts(wallet, limit, continuation);
+  public getNftsFromNftPort = async (wallet: string, contractAddress: string, limit: number, continuation: string): Promise<NftPortCollectiblePaginationDto> => {
+    return await this.nftPortClient.getNfts(wallet, contractAddress, limit, continuation);
   }
 
   public getEthereumAssetOwner = async (assetContractAddress: string, tokenId: string): Promise<string> => {
