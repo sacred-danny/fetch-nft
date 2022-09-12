@@ -231,6 +231,7 @@ export class OpenSeaClient {
             imageUrl: item?.image_url|| '',
             contractAddress: (item?.primary_asset_contracts || []).reduce((prev: any, current: any) => (prev?.address || '') + `${prev?.address ? ',' : ''}` + (current?.address || ''), '') || '',
             safeListRequestStatus: item?.safelist_request_status || '',
+            numNftsOwned: item?.owned_asset_count || 0
           }
         })];
         offset += limit;
@@ -470,6 +471,7 @@ export class NftPortClient {
             imageUrl: item?.metadata?.thumbnail_url || '',
             contractAddress: (item?.address || '').toLowerCase(),
             safeListRequestStatus: item?.safelist_request_status || '',
+            numNftsOwned: item?.num_nfts_owned || 0,
           }
         })];
         if (!item.continuation) {

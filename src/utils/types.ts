@@ -49,6 +49,7 @@ export type CollectionInfo = {
   slug: string
   imageUrl: string
   contractAddress: string
+  numNftsOwned?: number
   safeListRequestStatus?: string
   openListingCount?: number
   closeListingCount?: number
