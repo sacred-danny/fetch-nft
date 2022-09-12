@@ -456,14 +456,14 @@ export class NftPortClient {
 
   public getAllCollections = async (wallet: string): Promise<CollectionInfo[]> => {
     try {
-      let result = [];
+      let result: any[] = [];
       let continuation = null;
       while (1) {
         const item = await this.sendGetRequest(`${this.url}/v0/accounts/contracts/${wallet}?chain=${this.chain}&type=owns_contract_nfts&page_size=${this.assetLimit}${continuation ? ('&continuation=' + continuation) : ''}`);
         if (!item || (item && !item?.contracts) || (item && item?.contracts && item?.contracts.length === 0)) {
           break;
         }
-        result = [...result, item?.contracts.map((item: any) => {
+        result = [...result, ...item?.contracts.map((item: any) => {
           return {
             name: item.name || '',
             slug: item?.slug || '',
