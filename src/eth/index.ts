@@ -426,7 +426,7 @@ export class NftPortClient {
     continuation: string
   ): Promise<NftPortCollectiblePaginationDto> => {
     try {
-      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}?chain=${this.chain}&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
+      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}?exclude=erc1155&chain=${this.chain}&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
       if (!item || (item && !item?.nfts) || (item && item?.nfts && item.nfts?.length === 0)) {
         return {
           data: [],
