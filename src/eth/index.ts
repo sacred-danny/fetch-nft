@@ -424,10 +424,10 @@ export class NftPortClient {
     contractAddress: string,
     limit = this.assetLimit,
     continuation: string,
-    isShowOnlyUsable = false
+    exclude1155 = true
   ): Promise<NftPortCollectiblePaginationDto> => {
     try {
-      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}${isShowOnlyUsable ? '?exclude=erc1155&' : '?'}chain=${this.chain}&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
+      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}${exclude1155 ? '?exclude=erc1155&' : '?'}chain=${this.chain}&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
       if (!item || (item && !item?.nfts) || (item && item?.nfts && item.nfts?.length === 0)) {
         return {
           data: [],
