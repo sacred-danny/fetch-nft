@@ -453,11 +453,11 @@ export class NftPortClient {
           metadata: null,
           owner: {
             user: null,
-            address: wallet,
-            profile_img_url: null,
+            address: wallet.toLowerCase(),
+            profileImageUrl: null,
             config: ""
           },
-          wallet
+          wallet: wallet.toLowerCase()
         });
         data.push(collectible)
       }
