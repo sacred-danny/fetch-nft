@@ -70,6 +70,21 @@ export type NftPortClientProps = {
   chain?: string
 }
 
+function wait(delay: number) {
+  return new Promise((resolve) => setTimeout(resolve, delay));
+}
+
+function fetchRetry(url: string, delay: number, tries: number, fetchOptions = {}) {
+  function onError(err: any): any {
+    const triesLeft = tries - 1;
+    if(!triesLeft){
+      throw err;
+    }
+    return wait(delay).then(() => fetchRetry(url, delay, triesLeft, fetchOptions));
+  }
+  return fetch(url,fetchOptions).catch(onError);
+}
+
 export class OpenSeaClient {
   readonly url: string = OPENSEA_API_URL;
   readonly apiKey: string = '';
@@ -85,7 +100,7 @@ export class OpenSeaClient {
 
   private sendGetRequest = async (url = '') => {
     // Default options are marked with *
-    const response = await fetch(url, {
+    const response = await fetchRetry(url, 1000, 3, {
       method: 'GET', // *GET, POST, PUT, DELETE, etc.
       mode: 'cors', // no-cors, *cors, same-origin
       cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
@@ -388,7 +403,6 @@ export class OpenSeaClient {
   };
 }
 
-
 export class NftPortClient {
   readonly url: string = NFT_PORT_API_URL;
   readonly apiKey: string = '';
@@ -404,7 +418,7 @@ export class NftPortClient {
 
   private sendGetRequest = async (url = '') => {
     // Default options are marked with *
-    const response = await fetch(url, {
+    const response = await fetchRetry(url, 1000, 3, {
       method: 'GET', // *GET, POST, PUT, DELETE, etc.
       mode: 'cors', // no-cors, *cors, same-origin
       cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
