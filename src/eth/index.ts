@@ -70,17 +70,6 @@ export type NftPortClientProps = {
   chain?: string
 }
 
-function wait(delay: number) {
-  return new Promise((resolve) => setTimeout(resolve, delay));
-}
-
-function fetchRetry(url: string, delay: number, fetchOptions = {}) {
-  function onError(): any {
-    return wait(delay * 2 >= 4000 ? 4000 : delay * 2).then(() => fetchRetry(url, delay, fetchOptions));
-  }
-  return fetch(url,fetchOptions).catch(onError);
-}
-
 export class OpenSeaClient {
   readonly url: string = OPENSEA_API_URL;
   readonly apiKey: string = '';
@@ -96,7 +85,7 @@ export class OpenSeaClient {
 
   private sendGetRequest = async (url = '') => {
     // Default options are marked with *
-    const response = await fetchRetry(url, 500, {
+    const response = await fetch(url, {
       method: 'GET', // *GET, POST, PUT, DELETE, etc.
       mode: 'cors', // no-cors, *cors, same-origin
       cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
@@ -414,7 +403,7 @@ export class NftPortClient {
 
   private sendGetRequest = async (url = '') => {
     // Default options are marked with *
-    const response = await fetchRetry(url, 500, {
+    const response = await fetch(url, {
       method: 'GET', // *GET, POST, PUT, DELETE, etc.
       mode: 'cors', // no-cors, *cors, same-origin
       cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
@@ -449,16 +438,16 @@ export class NftPortClient {
       for await (const nft of item.nfts) {
         const collectible = await nftportAssetToCollectible({
           token_id: nft?.token_id,
-          contract_address: nft.contract_address,
+          contract_address: nft?.contract_address,
           name: nft.name,
           description: nft.description,
-          image_url: nft?.cached_file_url,
+          image_url: nft?.cached_file_url || null,
           image_preview_url: null,
           image_thumbnail_url: null,
           image_original_url: null,
           animation_url: null,
           animation_original_url: null,
-          cached_file_url: nft?.cached_file_url,
+          cached_file_url: nft?.cached_file_url || null,
           cached_animation_url: null,
           creator_address: null,
           metadata: null,

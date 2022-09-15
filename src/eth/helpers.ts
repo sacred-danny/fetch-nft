@@ -259,17 +259,19 @@ export const nftportAssetToCollectible = async (
       )!
       frameUrl = imageUrls.find(
         url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
-      )!
+      )! ?? null
       // image urls may not end in known extensions
       // just because the don't end with the NON_IMAGE_EXTENSIONS above does not mean they are images
       // they may be gifs
       // example: https://lh3.googleusercontent.com/rOopRU-wH9mqMurfvJ2INLIGBKTtF8BN_XC7KZxTh8PPHt5STSNJ-i8EQit8ZTwE3Mi8LK4on_4YazdC3Cl-HdaxbnKJ23P8kocvJHQ
-      const res = await fetch(frameUrl, { method: 'HEAD' })
-      const hasGifFrame = res.headers.get('Content-Type')?.includes('gif')
-      if (hasGifFrame) {
-        gifUrl = frameUrl
-        // frame url for the gif is computed later in the collectibles page
-        frameUrl = null
+      if (frameUrl) {
+        const res = await fetch(frameUrl, { method: 'HEAD' })
+        const hasGifFrame = res.headers.get('Content-Type')?.includes('gif')
+        if (hasGifFrame) {
+          gifUrl = frameUrl
+          // frame url for the gif is computed later in the collectibles page
+          frameUrl = null
+        }
       }
     } else if (isAssetVideo(asset)) {
       mediaType = 'VIDEO'
@@ -296,27 +298,29 @@ export const nftportAssetToCollectible = async (
       )!
     } else {
       mediaType = 'IMAGE'
-      frameUrl = imageUrls.find(url => !!url)!
-      const res = await fetch(frameUrl, { method: 'HEAD' })
-      const isGif = res.headers.get('Content-Type')?.includes('gif')
-      const isVideo = res.headers.get('Content-Type')?.includes('video')
-      if (isGif) {
-        mediaType = 'GIF'
-        gifUrl = frameUrl
-        // frame url for the gif is computed later in the collectibles page
-        frameUrl = null
-      } else if (isVideo) {
-        mediaType = 'VIDEO'
-        frameUrl = null
-        videoUrl = imageUrls.find(url => !!url)!
-      } else {
-        imageUrl = imageUrls.find(url => !!url)!
+      frameUrl = imageUrls.find(url => !!url)! ?? null
+      if (frameUrl) {
+        const res = await fetch(frameUrl, { method: 'HEAD' })
+        const isGif = res.headers.get('Content-Type')?.includes('gif')
+        const isVideo = res.headers.get('Content-Type')?.includes('video')
+        if (isGif) {
+          mediaType = 'GIF'
+          gifUrl = frameUrl
+          // frame url for the gif is computed later in the collectibles page
+          frameUrl = null
+        } else if (isVideo) {
+          mediaType = 'VIDEO'
+          frameUrl = null
+          videoUrl = imageUrls.find(url => !!url)!
+        } else {
+          imageUrl = imageUrls.find(url => !!url)!
+        }
       }
     }
   } catch (e) {
     console.error('Error processing collectible', e)
     mediaType = 'IMAGE'
-    frameUrl = imageUrls.find(url => !!url)!
+    frameUrl = imageUrls.find(url => !!url)! ?? null
     imageUrl = frameUrl
   }
 
