@@ -5,8 +5,7 @@ import {
   CollectibleState,
   CollectionInfo,
   NftPortCollectiblePaginationDto,
-  NftPortCollectionInfoPaginationDto,
-  NftPortCollectible
+  NftPortCollectionInfoPaginationDto
 } from 'utils/types';
 
 import 'cross-fetch/polyfill'
@@ -86,4 +85,4 @@ export class FetchNFTClient {
   }
 }
 
-export { Collectible, CollectibleState, CollectionInfo, NftPortCollectionInfoPaginationDto, NftPortCollectible }
+export { Collectible, CollectibleState, CollectionInfo, NftPortCollectionInfoPaginationDto }

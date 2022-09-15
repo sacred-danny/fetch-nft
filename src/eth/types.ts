@@ -54,7 +54,26 @@ export type OpenSeaAsset = {
   collection: Nullable<any>
 }
 
+export type NftPortAsset = {
+  token_id: string
+  contract_address: string
+  name: Nullable<string>
+  description: Nullable<string>
+  image_url: Nullable<string>
+  image_preview_url: Nullable<string>
+  image_thumbnail_url: Nullable<string>
+  image_original_url: Nullable<string>
+  animation_url: Nullable<string>
+  animation_original_url: Nullable<string>
+  cached_file_url: Nullable<string>
+  cached_animation_url: Nullable<string>
+  creator_address: Nullable<string>
+  owner: Nullable<any>
+  metadata: Nullable<any>
+}
+
 export type OpenSeaAssetExtended = OpenSeaAsset & { wallet: string }
+export type NftPortAssetExtended = NftPortAsset & { wallet: string }
 
 export type OpenSeaEvent = {
   id: number

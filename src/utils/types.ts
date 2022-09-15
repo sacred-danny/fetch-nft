@@ -5,9 +5,9 @@ export type Chain = 'eth' | 'sol'
 export type CollectibleMediaType = 'IMAGE' | 'VIDEO' | 'GIF' | 'THREE_D'
 
 export type Collectible = {
-  id: string
+  id?: string
   tokenId: string
-  openseaId: Nullable<string>
+  openseaId?: Nullable<string>
   name: Nullable<string>
   description: Nullable<string>
   mediaType: CollectibleMediaType
@@ -17,10 +17,10 @@ export type Collectible = {
   videoUrl: Nullable<string>
   threeDUrl: Nullable<string>
   isOwned: boolean
-  dateCreated: Nullable<string>
-  dateLastTransferred: Nullable<string>
-  externalLink: Nullable<string>
-  permaLink: Nullable<string>
+  dateCreated?: Nullable<string>
+  dateLastTransferred?: Nullable<string>
+  externalLink?: Nullable<string>
+  permaLink?: Nullable<string>
   assetContractAddress: Nullable<string>
   chain: Chain
   wallet: string
@@ -28,13 +28,8 @@ export type Collectible = {
   owner?: any
 }
 
-export type NftPortCollectible = {
-  tokenId: string
-  assetContractAddress: Nullable<string>
-}
-
 export type NftPortCollectiblePaginationDto = {
-  data: NftPortCollectible[],
+  data: Collectible[],
   continuation?: string,
   count: number;
 }

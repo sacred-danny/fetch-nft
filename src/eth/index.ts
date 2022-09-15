@@ -3,7 +3,7 @@ import {
   assetToCollectible,
   creationEventToCollectible,
   transferEventToCollectible,
-  isFromNullAddress,
+  isFromNullAddress, nftportAssetToCollectible,
 } from 'eth/helpers';
 import {
   OpenSeaAsset,
@@ -437,7 +437,7 @@ export class NftPortClient {
     exclude1155 = true
   ): Promise<NftPortCollectiblePaginationDto> => {
     try {
-      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}${exclude1155 ? '?exclude=erc1155&' : '?'}chain=${this.chain}&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
+      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}${exclude1155 ? '?exclude=erc1155&' : '?'}chain=${this.chain}&include=metadata&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
       if (!item || (item && !item?.nfts) || (item && item?.nfts && item.nfts?.length === 0)) {
         return {
           data: [],
@@ -445,12 +445,34 @@ export class NftPortClient {
           count: 0
         };
       }
-      const data = item.nfts.map((item: any) => {
-        return {
-          tokenId: item?.token_id,
-          assetContractAddress: item?.contract_address
-        }
-      });
+      const data = [];
+      for await (const nft of item.nfts) {
+        const collectible = await nftportAssetToCollectible({
+          token_id: nft?.token_id,
+          contract_address: nft.contract_address,
+          name: nft.name,
+          description: nft.description,
+          image_url: nft?.cached_file_url,
+          image_preview_url: null,
+          image_thumbnail_url: null,
+          image_original_url: null,
+          animation_url: null,
+          animation_original_url: null,
+          cached_file_url: nft?.cached_file_url,
+          cached_animation_url: null,
+          creator_address: null,
+          metadata: null,
+          owner: {
+            user: null,
+            address: wallet,
+            profile_img_url: null,
+            config: ""
+          },
+          wallet
+        });
+        data.push(collectible)
+      }
+
       return {
         data,
         continuation: item.continuation,
