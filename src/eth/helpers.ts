@@ -240,7 +240,10 @@ export const nftportAssetToCollectible = async (
 
   const { animation_url, animation_original_url } = asset
   const imageUrls = [
-    asset.cached_file_url,
+    asset.image_url,
+    asset.image_original_url,
+    asset.image_preview_url,
+    asset.image_thumbnail_url
   ]
 
   try {
