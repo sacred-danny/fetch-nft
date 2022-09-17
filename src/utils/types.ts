@@ -26,6 +26,7 @@ export type Collectible = {
   wallet: string
   collection?: any
   owner?: any
+  usable?: boolean
 }
 
 export type NftPortCollectiblePaginationDto = {
