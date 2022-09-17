@@ -248,7 +248,7 @@ export class OpenSeaClient {
   public getAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
     try {
       const result = await this.sendGetRequest(`${this.url}/asset/${assetContractAddress}/${tokenId}`);
-      if (!result || (result && result.success && result.success.toString() === false)) {
+      if (!result || (result && !result.success)) {
         return null;
       }
       return assetToCollectible(result);
@@ -442,7 +442,7 @@ export class NftPortClient {
           image_preview_url: null,
           image_thumbnail_url: null,
           image_original_url: null,
-          animation_url: null,
+          animation_url: nft?.cached_animation_url || null,
           animation_original_url: null,
           cached_file_url: nft?.cached_file_url || null,
           cached_animation_url: null,
@@ -501,6 +501,41 @@ export class NftPortClient {
     } catch (e) {
       console.log(e);
       return [];
+    }
+  };
+
+  public getAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
+    try {
+      const result = await this.sendGetRequest(`${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}`);
+      if (!result || (result && result?.response !== "OK") || (result && !result?.nft) || (result && !result?.owner)) {
+        return null;
+      }
+      return await nftportAssetToCollectible({
+        token_id: result.nft?.token_id,
+        contract_address: result.nft?.contract_address,
+        name: result.nft.name,
+        description: result.nft.description,
+        image_url: result.nft?.cached_file_url || null,
+        image_preview_url: null,
+        image_thumbnail_url: null,
+        image_original_url: null,
+        animation_url: result.nft?.cached_animation_url || null,
+        animation_original_url: null,
+        cached_file_url: result.nft?.cached_file_url || null,
+        cached_animation_url: null,
+        creator_address: null,
+        metadata: null,
+        owner: {
+          user: null,
+          address: result.owner.toLowerCase(),
+          profileImageUrl: null,
+          config: '',
+        },
+        wallet: result.owner.toLowerCase(),
+      });
+    } catch (e) {
+      console.log(e);
+      return null;
     }
   };
 
