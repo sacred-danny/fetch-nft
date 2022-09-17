@@ -1,3 +1,5 @@
+import axios from 'axios';
+import rateLimit from 'axios-rate-limit';
 import {
   isAssetValid,
   assetToCollectible,
@@ -158,10 +160,10 @@ export class OpenSeaClient {
   public getCollectiblesForWalletByContractAddressesAndTokenIds = async (
     wallet: string,
     contractAddresses: string[],
-    tokenIds: string[]
+    tokenIds: string[],
   ): Promise<Collectible[]> => {
     if (!contractAddresses.length || !tokenIds.length || contractAddresses.length !== tokenIds.length) {
-      return null;
+      return [];
     }
     let result = [];
     let url = `${this.url}/assets?owner=${wallet}`;
@@ -170,7 +172,7 @@ export class OpenSeaClient {
     try {
       const item = await this.sendGetRequest(url);
       if (!item || (item && !item.assets) || (item && item.assets && item.assets.length === 0)) {
-        return null;
+        return [];
       }
       for await (const asset of item.assets) {
         const collectible = await assetToCollectible(asset);
@@ -179,7 +181,7 @@ export class OpenSeaClient {
       return result;
     } catch (e) {
       console.log(e);
-      return null;
+      return [];
     }
   };
 
@@ -215,7 +217,7 @@ export class OpenSeaClient {
     }
   };
 
-  public getAllCollections = async (wallet: string, limit = this.assetLimit,): Promise<CollectionInfo[]> => {
+  public getAllCollections = async (wallet: string, limit = this.assetLimit): Promise<CollectionInfo[]> => {
     let offset = 0;
     let result: any[] = [];
     try {
@@ -228,11 +230,11 @@ export class OpenSeaClient {
           return {
             name: item.name || '',
             slug: item?.slug || '',
-            imageUrl: item?.image_url|| '',
+            imageUrl: item?.image_url || '',
             contractAddress: (item?.primary_asset_contracts || []).reduce((prev: any, current: any) => (prev?.address || '') + `${prev?.address ? ',' : ''}` + (current?.address || ''), '') || '',
             safeListRequestStatus: item?.safelist_request_status || '',
-            numNftsOwned: item?.owned_asset_count || 0
-          }
+            numNftsOwned: item?.owned_asset_count || 0,
+          };
         })];
         offset += limit;
       }
@@ -241,7 +243,7 @@ export class OpenSeaClient {
     } finally {
       return result;
     }
-  }
+  };
 
   public getAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
     try {
@@ -402,20 +404,15 @@ export class NftPortClient {
   }
 
   private sendGetRequest = async (url = '') => {
-    // Default options are marked with *
-    const response = await fetch(url, {
+    const http = rateLimit(axios.create(), { maxRequests: 10, perMilliseconds: 1000 });
+    const response = await http.get(url, {
       method: 'GET', // *GET, POST, PUT, DELETE, etc.
-      mode: 'cors', // no-cors, *cors, same-origin
-      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: 'same-origin', // include, *same-origin, omit
       headers: {
         'Content-Type': 'application/json',
         'Authorization': this.apiKey,
       },
-      redirect: 'follow', // manual, *follow, error
-      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     });
-    return response.json(); // parses JSON response into native JavaScript objects
+    return response.data || null;
   };
 
   public getNfts = async (
@@ -423,7 +420,7 @@ export class NftPortClient {
     contractAddress: string,
     limit = this.assetLimit,
     continuation: string,
-    exclude1155 = true
+    exclude1155 = true,
   ): Promise<NftPortCollectiblePaginationDto> => {
     try {
       const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}${exclude1155 ? '?exclude=erc1155&' : '?'}chain=${this.chain}&include=metadata&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
@@ -431,7 +428,7 @@ export class NftPortClient {
         return {
           data: [],
           continuation: null,
-          count: 0
+          count: 0,
         };
       }
       const data = [];
@@ -455,24 +452,24 @@ export class NftPortClient {
             user: null,
             address: wallet.toLowerCase(),
             profileImageUrl: null,
-            config: ""
+            config: '',
           },
-          wallet: wallet.toLowerCase()
+          wallet: wallet.toLowerCase(),
         });
-        data.push(collectible)
+        data.push(collectible);
       }
 
       return {
         data,
         continuation: item.continuation,
-        count: item.total
+        count: item.total,
       };
     } catch (e) {
       console.log(e);
       return {
         data: [],
         continuation: null,
-        count: 0
+        count: 0,
       };
     }
   };
@@ -494,7 +491,7 @@ export class NftPortClient {
             contractAddress: (item?.address || '').toLowerCase(),
             safeListRequestStatus: item?.safelist_request_status || '',
             numNftsOwned: item?.num_nfts_owned || 0,
-          }
+          };
         })];
         if (!item.continuation) {
           break;
