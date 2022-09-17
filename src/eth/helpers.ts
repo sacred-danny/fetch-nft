@@ -135,7 +135,7 @@ export const assetToCollectible = async (
       mediaType = 'GIF'
       // frame url for the gif is computed later in the collectibles page
       frameUrl = null
-      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! || null
+      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null
       if (gifUrl) {
         usable = true;
       }
@@ -143,10 +143,10 @@ export const assetToCollectible = async (
       mediaType = 'THREE_D'
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext))
-      )! || null
+      )! ?? null
       frameUrl = imageUrls.find(
         url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
-      )! || null
+      )! ?? null
       // image urls may not end in known extensions
       // just because the don't end with the NON_IMAGE_EXTENSIONS above does not mean they are images
       // they may be gifs
@@ -182,13 +182,13 @@ export const assetToCollectible = async (
 
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
-      )! || null
+      )! ?? null
       if (videoUrl) {
         usable = true;
       }
     } else {
       mediaType = 'IMAGE'
-      frameUrl = imageUrls.find(url => !!url)!
+      frameUrl = imageUrls.find(url => !!url)! ?? null
       const res = await fetch(frameUrl, { method: 'HEAD' })
       const isGif = res.headers.get('Content-Type')?.includes('gif')
       const isVideo = res.headers.get('Content-Type')?.includes('video')
@@ -203,12 +203,12 @@ export const assetToCollectible = async (
       } else if (isVideo) {
         mediaType = 'VIDEO'
         frameUrl = null
-        videoUrl = imageUrls.find(url => !!url)! | null
+        videoUrl = imageUrls.find(url => !!url)! ?? null
         if (videoUrl) {
           usable = true
         }
       } else {
-        imageUrl = imageUrls.find(url => !!url)! || null
+        imageUrl = imageUrls.find(url => !!url)! ?? null
         if (imageUrl) {
           usable = true;
         }
@@ -217,7 +217,7 @@ export const assetToCollectible = async (
   } catch (e) {
     console.error('Error processing collectible', e)
     mediaType = 'IMAGE'
-    frameUrl = imageUrls.find(url => !!url)!
+    frameUrl = imageUrls.find(url => !!url)! ?? null
     imageUrl = frameUrl
     if (imageUrl) {
       usable = true;
@@ -274,7 +274,7 @@ export const nftportAssetToCollectible = async (
       mediaType = 'GIF'
       // frame url for the gif is computed later in the collectibles page
       frameUrl = null
-      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! || null
+      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null
       if (gifUrl) {
         usable = true
       }
@@ -282,7 +282,7 @@ export const nftportAssetToCollectible = async (
       mediaType = 'THREE_D'
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext))
-      )! || null
+      )! ?? null
       frameUrl = imageUrls.find(
         url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
       )! ?? null
@@ -323,7 +323,7 @@ export const nftportAssetToCollectible = async (
 
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
-      )! || null
+      )! ?? null
       if (videoUrl) {
         usable = true
       }
@@ -345,12 +345,12 @@ export const nftportAssetToCollectible = async (
         } else if (isVideo) {
           mediaType = 'VIDEO'
           frameUrl = null
-          videoUrl = imageUrls.find(url => !!url)! || null
+          videoUrl = imageUrls.find(url => !!url)! ?? null
           if (videoUrl) {
             usable = true
           }
         } else {
-          imageUrl = imageUrls.find(url => !!url)! | null
+          imageUrl = imageUrls.find(url => !!url)! ?? null
           if (imageUrl) {
             usable = true
           }
