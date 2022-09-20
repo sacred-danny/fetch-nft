@@ -93,7 +93,16 @@ const convertIpfsUrl = (url: string): string => {
   if (!url) {
     return null;
   }
-  return `${IPFS_GATEWAY}/${url.replace('ipfs://', '')}`;
+  if (url.startsWith('ipfs://')) {
+    return `${IPFS_GATEWAY}/${url.replace('ipfs://', '')}`;
+  } else {
+    const subUrls = url.split('ipfs');
+    if (subUrls.length > 1) {
+      return `${IPFS_GATEWAY}/ipfs/${subUrls[1]}`;
+    } else {
+      return url;
+    }
+  }
 };
 
 /**
@@ -162,13 +171,15 @@ export const assetToCollectible = async (
       // just because the don't end with the NON_IMAGE_EXTENSIONS above does not mean they are images
       // they may be gifs
       // example: https://lh3.googleusercontent.com/rOopRU-wH9mqMurfvJ2INLIGBKTtF8BN_XC7KZxTh8PPHt5STSNJ-i8EQit8ZTwE3Mi8LK4on_4YazdC3Cl-HdaxbnKJ23P8kocvJHQ
-      const res = await fetch(frameUrl, { method: 'HEAD' });
-      const hasGifFrame = res.headers.get('Content-Type')?.includes('gif');
-      if (hasGifFrame) {
-        gifUrl = frameUrl;
-        // frame url for the gif is computed later in the collectibles page
-        frameUrl = null;
-        usable = true;
+      if (frameUrl && frameUrl.startsWith("http")) {
+        const res = await fetch(frameUrl, { method: 'HEAD' });
+        const hasGifFrame = res.headers.get('Content-Type')?.includes('gif');
+        if (hasGifFrame) {
+          gifUrl = frameUrl;
+          // frame url for the gif is computed later in the collectibles page
+          frameUrl = null;
+          usable = true;
+        }
       }
     } else if (isAssetVideo(asset)) {
       mediaType = 'VIDEO';
@@ -181,7 +192,7 @@ export const assetToCollectible = async (
        * make sure frame url is not a video or a gif
        * if it is, unset frame url so that component will use a video url frame instead
        */
-      if (frameUrl) {
+      if (frameUrl && frameUrl.startsWith("http")) {
         const res = await fetch(frameUrl, { method: 'HEAD' });
         const isVideo = res.headers.get('Content-Type')?.includes('video');
         const isGif = res.headers.get('Content-Type')?.includes('gif');
@@ -200,28 +211,30 @@ export const assetToCollectible = async (
     } else {
       mediaType = 'IMAGE';
       frameUrl = imageUrls.find(url => !!url)! ?? null;
-      const res = await fetch(frameUrl, { method: 'HEAD' });
-      const isGif = res.headers.get('Content-Type')?.includes('gif');
-      const isVideo = res.headers.get('Content-Type')?.includes('video');
-      if (isGif) {
-        mediaType = 'GIF';
-        gifUrl = frameUrl;
-        // frame url for the gif is computed later in the collectibles page
-        frameUrl = null;
-        if (gifUrl) {
-          usable = true;
-        }
-      } else if (isVideo) {
-        mediaType = 'VIDEO';
-        frameUrl = null;
-        videoUrl = imageUrls.find(url => !!url)! ?? null;
-        if (videoUrl) {
-          usable = true;
-        }
-      } else {
-        imageUrl = imageUrls.find(url => !!url)! ?? null;
-        if (imageUrl) {
-          usable = true;
+      if (frameUrl && frameUrl.startsWith("http")) {
+        const res = await fetch(frameUrl, { method: 'HEAD' });
+        const isGif = res.headers.get('Content-Type')?.includes('gif');
+        const isVideo = res.headers.get('Content-Type')?.includes('video');
+        if (isGif) {
+          mediaType = 'GIF';
+          gifUrl = frameUrl;
+          // frame url for the gif is computed later in the collectibles page
+          frameUrl = null;
+          if (gifUrl) {
+            usable = true;
+          }
+        } else if (isVideo) {
+          mediaType = 'VIDEO';
+          frameUrl = null;
+          videoUrl = imageUrls.find(url => !!url)! ?? null;
+          if (videoUrl) {
+            usable = true;
+          }
+        } else {
+          imageUrl = imageUrls.find(url => !!url)! ?? null;
+          if (imageUrl) {
+            usable = true;
+          }
         }
       }
     }
@@ -302,7 +315,7 @@ export const nftportAssetToCollectible = async (
       // just because the don't end with the NON_IMAGE_EXTENSIONS above does not mean they are images
       // they may be gifs
       // example: https://lh3.googleusercontent.com/rOopRU-wH9mqMurfvJ2INLIGBKTtF8BN_XC7KZxTh8PPHt5STSNJ-i8EQit8ZTwE3Mi8LK4on_4YazdC3Cl-HdaxbnKJ23P8kocvJHQ
-      if (frameUrl) {
+      if (frameUrl && frameUrl.startsWith("http")) {
         const res = await fetch(frameUrl, { method: 'HEAD' });
         const hasGifFrame = res.headers.get('Content-Type')?.includes('gif');
         if (hasGifFrame) {
@@ -323,7 +336,7 @@ export const nftportAssetToCollectible = async (
        * make sure frame url is not a video or a gif
        * if it is, unset frame url so that component will use a video url frame instead
        */
-      if (frameUrl) {
+      if (frameUrl && frameUrl.startsWith("http")) {
         const res = await fetch(frameUrl, { method: 'HEAD' });
         const isVideo = res.headers.get('Content-Type')?.includes('video');
         const isGif = res.headers.get('Content-Type')?.includes('gif');
@@ -342,7 +355,7 @@ export const nftportAssetToCollectible = async (
     } else {
       mediaType = 'IMAGE';
       frameUrl = imageUrls.find(url => !!url)! ?? null;
-      if (frameUrl) {
+      if (frameUrl && frameUrl.startsWith("http")) {
         const res = await fetch(frameUrl, { method: 'HEAD' });
         const isGif = res.headers.get('Content-Type')?.includes('gif');
         const isVideo = res.headers.get('Content-Type')?.includes('video');
