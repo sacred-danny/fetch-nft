@@ -131,12 +131,14 @@ export const assetToCollectible = async (
   let gifUrl = null;
   let usable = false;
 
-  const { animation_url, animation_original_url } = asset;
+  let { animation_url, animation_original_url } = asset;
+  animation_url = convertIpfsUrl(animation_url);
+  animation_original_url = convertIpfsUrl(animation_original_url);
   const imageUrls = [
-    asset.image_url,
-    asset.image_original_url,
-    asset.image_preview_url,
-    asset.image_thumbnail_url,
+    convertIpfsUrl(asset.image_url),
+    convertIpfsUrl(asset.image_original_url),
+    convertIpfsUrl(asset.image_preview_url),
+    convertIpfsUrl(asset.image_thumbnail_url),
   ];
 
   try {
@@ -234,17 +236,16 @@ export const assetToCollectible = async (
   }
 
   return {
-    id: `${asset.token_id}:::${asset.asset_contract?.address ?? ''}`,
     openseaId: (asset.id || '').toString(),
     tokenId: asset.token_id,
     name: (asset.name || asset?.asset_contract?.name) ?? '',
     description: asset.description,
     mediaType,
-    frameUrl: convertIpfsUrl(frameUrl),
-    imageUrl: convertIpfsUrl(imageUrl),
-    videoUrl: convertIpfsUrl(videoUrl),
-    threeDUrl: convertIpfsUrl(threeDUrl),
-    gifUrl: convertIpfsUrl(gifUrl),
+    frameUrl,
+    imageUrl,
+    videoUrl,
+    threeDUrl,
+    gifUrl,
     isOwned: true,
     dateCreated: null,
     dateLastTransferred: null,
@@ -270,12 +271,14 @@ export const nftportAssetToCollectible = async (
   let gifUrl = null;
   let usable = false;
 
-  const { animation_url, animation_original_url } = asset;
+  let { animation_url, animation_original_url } = asset;
+  animation_url = convertIpfsUrl(animation_url);
+  animation_original_url = convertIpfsUrl(animation_original_url);
   const imageUrls = [
-    asset.image_url,
-    asset.image_original_url,
-    asset.image_preview_url,
-    asset.image_thumbnail_url,
+    convertIpfsUrl(asset.image_url),
+    convertIpfsUrl(asset.image_original_url),
+    convertIpfsUrl(asset.image_preview_url),
+    convertIpfsUrl(asset.image_thumbnail_url),
   ];
 
   try {
@@ -377,17 +380,16 @@ export const nftportAssetToCollectible = async (
   }
 
   return {
-    id: `${asset.token_id}:::${asset.contract_address ?? ''}`,
     openseaId: null,
     tokenId: asset.token_id,
     name: asset.name,
     description: asset.description,
     mediaType,
-    frameUrl: convertIpfsUrl(frameUrl),
-    imageUrl: convertIpfsUrl(imageUrl),
-    videoUrl: convertIpfsUrl(videoUrl),
-    threeDUrl: convertIpfsUrl(threeDUrl),
-    gifUrl: convertIpfsUrl(gifUrl),
+    frameUrl,
+    imageUrl,
+    videoUrl,
+    threeDUrl,
+    gifUrl,
     isOwned: true,
     dateCreated: null,
     dateLastTransferred: null,

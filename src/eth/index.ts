@@ -436,8 +436,8 @@ export class NftPortClient {
         const collectible = await nftportAssetToCollectible({
           token_id: nft?.token_id,
           contract_address: nft?.contract_address,
-          name: nft.name,
-          description: nft?.metadata?.description || null,
+          name: nft?.name || nft?.metadata?.name || null,
+          description: nft?.description || nft?.metadata?.description || null,
           image_url: nft?.file_url || nft?.cached_file_url || null,
           image_preview_url: null,
           image_thumbnail_url: null,
@@ -511,8 +511,8 @@ export class NftPortClient {
       return await nftportAssetToCollectible({
         token_id: result.nft?.token_id,
         contract_address: result.nft?.contract_address,
-        name: result.nft.name,
-        description: result.nft?.metadata?.description || null,
+        name: result.nft?.name || result.nft?.metadata?.name || null,
+        description: result.nft?.description || result.nft?.metadata?.description || null,
         image_url: result.nft?.file_url || result.nft?.cached_file_url || null,
         image_preview_url: null,
         image_thumbnail_url: null,
