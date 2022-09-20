@@ -437,12 +437,12 @@ export class NftPortClient {
           token_id: nft?.token_id,
           contract_address: nft?.contract_address,
           name: nft.name,
-          description: nft.description,
-          image_url: nft?.cached_file_url || null,
+          description: nft?.metadata?.description || null,
+          image_url: nft?.file_url || nft?.cached_file_url || null,
           image_preview_url: null,
           image_thumbnail_url: null,
           image_original_url: null,
-          animation_url: nft?.cached_animation_url || null,
+          animation_url: nft?.animation_url || nft?.cached_animation_url || null,
           animation_original_url: null,
           cached_file_url: nft?.cached_file_url || null,
           cached_animation_url: null,
@@ -465,7 +465,6 @@ export class NftPortClient {
         count: item.total,
       };
     } catch (e) {
-      console.log(e);
       return {
         data: [],
         continuation: null,
@@ -499,7 +498,6 @@ export class NftPortClient {
       }
       return result;
     } catch (e) {
-      console.log(e);
       return [];
     }
   };
@@ -514,12 +512,12 @@ export class NftPortClient {
         token_id: result.nft?.token_id,
         contract_address: result.nft?.contract_address,
         name: result.nft.name,
-        description: result.nft.description,
-        image_url: result.nft?.cached_file_url || null,
+        description: result.nft?.metadata?.description || null,
+        image_url: result.nft?.file_url || result.nft?.cached_file_url || null,
         image_preview_url: null,
         image_thumbnail_url: null,
         image_original_url: null,
-        animation_url: result.nft?.cached_animation_url || null,
+        animation_url: result.nft?.animation_url || result.nft?.cached_animation_url || null,
         animation_original_url: null,
         cached_file_url: result.nft?.cached_file_url || null,
         cached_animation_url: null,
@@ -534,7 +532,6 @@ export class NftPortClient {
         wallet: result.owner.toLowerCase(),
       });
     } catch (e) {
-      console.log(e);
       return null;
     }
   };

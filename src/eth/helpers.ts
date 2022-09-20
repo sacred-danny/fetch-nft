@@ -1,11 +1,11 @@
 import { NftPortAssetExtended, OpenSeaAssetExtended, OpenSeaEvent, OpenSeaEventExtended } from 'eth/types';
-import { Collectible, CollectibleMediaType } from 'utils/types'
+import { Collectible, CollectibleMediaType } from 'utils/types';
 
 /**
  * extensions based on OpenSea metadata standards
  * https://docs.opensea.io/docs/metadata-standards
  */
-const OPENSEA_AUDIO_EXTENSIONS = ['mp3', 'wav', 'oga']
+const OPENSEA_AUDIO_EXTENSIONS = ['mp3', 'wav', 'oga'];
 const OPENSEA_VIDEO_EXTENSIONS = [
   'gltf',
   'glb',
@@ -14,31 +14,31 @@ const OPENSEA_VIDEO_EXTENSIONS = [
   'm4v',
   'ogv',
   'ogg',
-  'mov'
-]
+  'mov',
+];
 
-const SUPPORTED_VIDEO_EXTENSIONS = ['webm', 'mp4', 'ogv', 'ogg', 'mov']
-const SUPPORTED_3D_EXTENSIONS = ['gltf', 'glb']
+const SUPPORTED_VIDEO_EXTENSIONS = ['webm', 'mp4', 'ogv', 'ogg', 'mov'];
+const SUPPORTED_3D_EXTENSIONS = ['gltf', 'glb'];
 
 const NON_IMAGE_EXTENSIONS = [
   ...OPENSEA_VIDEO_EXTENSIONS,
-  ...OPENSEA_AUDIO_EXTENSIONS
-]
+  ...OPENSEA_AUDIO_EXTENSIONS,
+];
 
-const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
+const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 const isAssetImage = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
   return [
     asset.image_url,
     asset.image_original_url,
     asset.image_preview_url,
-    asset.image_thumbnail_url
-  ].some(url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)))
-}
+    asset.image_thumbnail_url,
+  ].some(url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)));
+};
 
 const areUrlExtensionsSupportedForType = (
   asset: OpenSeaAssetExtended | NftPortAssetExtended,
-  extensions: string[]
+  extensions: string[],
 ) => {
   const {
     animation_url,
@@ -46,28 +46,28 @@ const areUrlExtensionsSupportedForType = (
     image_url,
     image_original_url,
     image_preview_url,
-    image_thumbnail_url
-  } = asset
+    image_thumbnail_url,
+  } = asset;
   return [
     animation_url || '',
     animation_original_url || '',
     image_url,
     image_original_url,
     image_preview_url,
-    image_thumbnail_url
-  ].some(url => url && extensions.some(ext => url.endsWith(ext)))
-}
+    image_thumbnail_url,
+  ].some(url => url && extensions.some(ext => url.endsWith(ext)));
+};
 
 const isAssetVideo = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
-  return areUrlExtensionsSupportedForType(asset, SUPPORTED_VIDEO_EXTENSIONS)
-}
+  return areUrlExtensionsSupportedForType(asset, SUPPORTED_VIDEO_EXTENSIONS);
+};
 
 const isAssetThreeDAndIncludesImage = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
   return (
     areUrlExtensionsSupportedForType(asset, SUPPORTED_3D_EXTENSIONS) &&
     isAssetImage(asset)
-  )
-}
+  );
+};
 
 const isAssetGif = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
   return !!(
@@ -75,8 +75,8 @@ const isAssetGif = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
     asset.image_original_url?.endsWith('.gif') ||
     asset.image_preview_url?.endsWith('.gif') ||
     asset.image_thumbnail_url?.endsWith('.gif')
-  )
-}
+  );
+};
 
 export const isAssetValid = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
   return (
@@ -84,8 +84,17 @@ export const isAssetValid = (asset: OpenSeaAssetExtended | NftPortAssetExtended)
     isAssetThreeDAndIncludesImage(asset) ||
     isAssetVideo(asset) ||
     isAssetImage(asset)
-  )
-}
+  );
+};
+
+export const IPFS_GATEWAY = 'https://balance.mypinata.cloud/ipfs';
+
+const convertIpfsUrl = (url: string): string => {
+  if (!url) {
+    return null;
+  }
+  return `${IPFS_GATEWAY}/${url.replace('ipfs://', '')}`;
+};
 
 /**
  * Returns a collectible given an asset object from the OpenSea API
@@ -112,113 +121,113 @@ export const isAssetValid = (asset: OpenSeaAssetExtended | NftPortAssetExtended)
  * @param asset
  */
 export const assetToCollectible = async (
-  asset: OpenSeaAssetExtended
+  asset: OpenSeaAssetExtended,
 ): Promise<Collectible> => {
-  let mediaType: CollectibleMediaType
-  let frameUrl = null
-  let imageUrl = null
-  let videoUrl = null
-  let threeDUrl = null
-  let gifUrl = null
-  let usable = false
+  let mediaType: CollectibleMediaType;
+  let frameUrl = null;
+  let imageUrl = null;
+  let videoUrl = null;
+  let threeDUrl = null;
+  let gifUrl = null;
+  let usable = false;
 
-  const { animation_url, animation_original_url } = asset
+  const { animation_url, animation_original_url } = asset;
   const imageUrls = [
     asset.image_url,
     asset.image_original_url,
     asset.image_preview_url,
-    asset.image_thumbnail_url
-  ]
+    asset.image_thumbnail_url,
+  ];
 
   try {
     if (isAssetGif(asset)) {
-      mediaType = 'GIF'
+      mediaType = 'GIF';
       // frame url for the gif is computed later in the collectibles page
-      frameUrl = null
-      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null
+      frameUrl = null;
+      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
       if (gifUrl) {
         usable = true;
       }
     } else if (isAssetThreeDAndIncludesImage(asset)) {
-      mediaType = 'THREE_D'
+      mediaType = 'THREE_D';
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
-        url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext))
-      )! ?? null
+        url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext)),
+      )! ?? null;
       frameUrl = imageUrls.find(
-        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
-      )! ?? null
+        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
+      )! ?? null;
       // image urls may not end in known extensions
       // just because the don't end with the NON_IMAGE_EXTENSIONS above does not mean they are images
       // they may be gifs
       // example: https://lh3.googleusercontent.com/rOopRU-wH9mqMurfvJ2INLIGBKTtF8BN_XC7KZxTh8PPHt5STSNJ-i8EQit8ZTwE3Mi8LK4on_4YazdC3Cl-HdaxbnKJ23P8kocvJHQ
-      const res = await fetch(frameUrl, { method: 'HEAD' })
-      const hasGifFrame = res.headers.get('Content-Type')?.includes('gif')
+      const res = await fetch(frameUrl, { method: 'HEAD' });
+      const hasGifFrame = res.headers.get('Content-Type')?.includes('gif');
       if (hasGifFrame) {
-        gifUrl = frameUrl
+        gifUrl = frameUrl;
         // frame url for the gif is computed later in the collectibles page
-        frameUrl = null
+        frameUrl = null;
         usable = true;
       }
     } else if (isAssetVideo(asset)) {
-      mediaType = 'VIDEO'
+      mediaType = 'VIDEO';
       frameUrl =
         imageUrls.find(
-          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
-        ) ?? null
+          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
+        ) ?? null;
 
       /**
        * make sure frame url is not a video or a gif
        * if it is, unset frame url so that component will use a video url frame instead
        */
       if (frameUrl) {
-        const res = await fetch(frameUrl, { method: 'HEAD' })
-        const isVideo = res.headers.get('Content-Type')?.includes('video')
-        const isGif = res.headers.get('Content-Type')?.includes('gif')
+        const res = await fetch(frameUrl, { method: 'HEAD' });
+        const isVideo = res.headers.get('Content-Type')?.includes('video');
+        const isGif = res.headers.get('Content-Type')?.includes('gif');
         if (isVideo || isGif) {
-          frameUrl = null
+          frameUrl = null;
           usable = true;
         }
       }
 
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
-        url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
-      )! ?? null
+        url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext)),
+      )! ?? null;
       if (videoUrl) {
         usable = true;
       }
     } else {
-      mediaType = 'IMAGE'
-      frameUrl = imageUrls.find(url => !!url)! ?? null
-      const res = await fetch(frameUrl, { method: 'HEAD' })
-      const isGif = res.headers.get('Content-Type')?.includes('gif')
-      const isVideo = res.headers.get('Content-Type')?.includes('video')
+      mediaType = 'IMAGE';
+      frameUrl = imageUrls.find(url => !!url)! ?? null;
+      const res = await fetch(frameUrl, { method: 'HEAD' });
+      const isGif = res.headers.get('Content-Type')?.includes('gif');
+      const isVideo = res.headers.get('Content-Type')?.includes('video');
       if (isGif) {
-        mediaType = 'GIF'
-        gifUrl = frameUrl
+        mediaType = 'GIF';
+        gifUrl = frameUrl;
         // frame url for the gif is computed later in the collectibles page
-        frameUrl = null
+        frameUrl = null;
         if (gifUrl) {
-          usable = true
+          usable = true;
         }
       } else if (isVideo) {
-        mediaType = 'VIDEO'
-        frameUrl = null
-        videoUrl = imageUrls.find(url => !!url)! ?? null
+        mediaType = 'VIDEO';
+        frameUrl = null;
+        videoUrl = imageUrls.find(url => !!url)! ?? null;
         if (videoUrl) {
-          usable = true
+          usable = true;
         }
       } else {
-        imageUrl = imageUrls.find(url => !!url)! ?? null
+        imageUrl = imageUrls.find(url => !!url)! ?? null;
         if (imageUrl) {
           usable = true;
         }
       }
     }
   } catch (e) {
-    console.error('Error processing collectible', e)
-    mediaType = 'IMAGE'
-    frameUrl = imageUrls.find(url => !!url)! ?? null
-    imageUrl = frameUrl
+    console.error('Error processing collectible', e);
+    mediaType = 'IMAGE';
+    frameUrl = imageUrls.find(url => !!url)! ?? null;
+    imageUrl = frameUrl;
     if (imageUrl) {
       usable = true;
     }
@@ -226,16 +235,16 @@ export const assetToCollectible = async (
 
   return {
     id: `${asset.token_id}:::${asset.asset_contract?.address ?? ''}`,
-    openseaId: (asset.id || "").toString(),
+    openseaId: (asset.id || '').toString(),
     tokenId: asset.token_id,
     name: (asset.name || asset?.asset_contract?.name) ?? '',
     description: asset.description,
     mediaType,
-    frameUrl,
-    imageUrl,
-    videoUrl,
-    threeDUrl,
-    gifUrl,
+    frameUrl: convertIpfsUrl(frameUrl),
+    imageUrl: convertIpfsUrl(imageUrl),
+    videoUrl: convertIpfsUrl(videoUrl),
+    threeDUrl: convertIpfsUrl(threeDUrl),
+    gifUrl: convertIpfsUrl(gifUrl),
     isOwned: true,
     dateCreated: null,
     dateLastTransferred: null,
@@ -246,124 +255,124 @@ export const assetToCollectible = async (
     owner: asset.owner,
     wallet: asset.wallet,
     collection: asset.collection,
-    usable
-  }
-}
+    usable,
+  };
+};
 
 export const nftportAssetToCollectible = async (
-  asset: NftPortAssetExtended
+  asset: NftPortAssetExtended,
 ): Promise<Collectible> => {
-  let mediaType: CollectibleMediaType
-  let frameUrl = null
-  let imageUrl = null
-  let videoUrl = null
-  let threeDUrl = null
-  let gifUrl = null
-  let usable = false
+  let mediaType: CollectibleMediaType;
+  let frameUrl = null;
+  let imageUrl = null;
+  let videoUrl = null;
+  let threeDUrl = null;
+  let gifUrl = null;
+  let usable = false;
 
-  const { animation_url, animation_original_url } = asset
+  const { animation_url, animation_original_url } = asset;
   const imageUrls = [
     asset.image_url,
     asset.image_original_url,
     asset.image_preview_url,
-    asset.image_thumbnail_url
-  ]
+    asset.image_thumbnail_url,
+  ];
 
   try {
     if (isAssetGif(asset)) {
-      mediaType = 'GIF'
+      mediaType = 'GIF';
       // frame url for the gif is computed later in the collectibles page
-      frameUrl = null
-      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null
+      frameUrl = null;
+      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
       if (gifUrl) {
-        usable = true
+        usable = true;
       }
     } else if (isAssetThreeDAndIncludesImage(asset)) {
-      mediaType = 'THREE_D'
+      mediaType = 'THREE_D';
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
-        url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext))
-      )! ?? null
+        url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext)),
+      )! ?? null;
       frameUrl = imageUrls.find(
-        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
-      )! ?? null
+        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
+      )! ?? null;
       // image urls may not end in known extensions
       // just because the don't end with the NON_IMAGE_EXTENSIONS above does not mean they are images
       // they may be gifs
       // example: https://lh3.googleusercontent.com/rOopRU-wH9mqMurfvJ2INLIGBKTtF8BN_XC7KZxTh8PPHt5STSNJ-i8EQit8ZTwE3Mi8LK4on_4YazdC3Cl-HdaxbnKJ23P8kocvJHQ
       if (frameUrl) {
-        const res = await fetch(frameUrl, { method: 'HEAD' })
-        const hasGifFrame = res.headers.get('Content-Type')?.includes('gif')
+        const res = await fetch(frameUrl, { method: 'HEAD' });
+        const hasGifFrame = res.headers.get('Content-Type')?.includes('gif');
         if (hasGifFrame) {
-          gifUrl = frameUrl
+          gifUrl = frameUrl;
           // frame url for the gif is computed later in the collectibles page
-          frameUrl = null
-          usable = true
+          frameUrl = null;
+          usable = true;
         }
       }
     } else if (isAssetVideo(asset)) {
-      mediaType = 'VIDEO'
+      mediaType = 'VIDEO';
       frameUrl =
         imageUrls.find(
-          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
-        ) ?? null
+          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
+        ) ?? null;
 
       /**
        * make sure frame url is not a video or a gif
        * if it is, unset frame url so that component will use a video url frame instead
        */
       if (frameUrl) {
-        const res = await fetch(frameUrl, { method: 'HEAD' })
-        const isVideo = res.headers.get('Content-Type')?.includes('video')
-        const isGif = res.headers.get('Content-Type')?.includes('gif')
+        const res = await fetch(frameUrl, { method: 'HEAD' });
+        const isVideo = res.headers.get('Content-Type')?.includes('video');
+        const isGif = res.headers.get('Content-Type')?.includes('gif');
         if (isVideo || isGif) {
-          frameUrl = null
-          usable = true
+          frameUrl = null;
+          usable = true;
         }
       }
 
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
-        url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
-      )! ?? null
+        url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext)),
+      )! ?? null;
       if (videoUrl) {
-        usable = true
+        usable = true;
       }
     } else {
-      mediaType = 'IMAGE'
-      frameUrl = imageUrls.find(url => !!url)! ?? null
+      mediaType = 'IMAGE';
+      frameUrl = imageUrls.find(url => !!url)! ?? null;
       if (frameUrl) {
-        const res = await fetch(frameUrl, { method: 'HEAD' })
-        const isGif = res.headers.get('Content-Type')?.includes('gif')
-        const isVideo = res.headers.get('Content-Type')?.includes('video')
+        const res = await fetch(frameUrl, { method: 'HEAD' });
+        const isGif = res.headers.get('Content-Type')?.includes('gif');
+        const isVideo = res.headers.get('Content-Type')?.includes('video');
         if (isGif) {
-          mediaType = 'GIF'
-          gifUrl = frameUrl
+          mediaType = 'GIF';
+          gifUrl = frameUrl;
           if (gifUrl) {
-            usable = true
+            usable = true;
           }
           // frame url for the gif is computed later in the collectibles page
-          frameUrl = null
+          frameUrl = null;
         } else if (isVideo) {
-          mediaType = 'VIDEO'
-          frameUrl = null
-          videoUrl = imageUrls.find(url => !!url)! ?? null
+          mediaType = 'VIDEO';
+          frameUrl = null;
+          videoUrl = imageUrls.find(url => !!url)! ?? null;
           if (videoUrl) {
-            usable = true
+            usable = true;
           }
         } else {
-          imageUrl = imageUrls.find(url => !!url)! ?? null
+          imageUrl = imageUrls.find(url => !!url)! ?? null;
           if (imageUrl) {
-            usable = true
+            usable = true;
           }
         }
       }
     }
   } catch (e) {
-    console.error('Error processing collectible', e)
-    mediaType = 'IMAGE'
-    frameUrl = imageUrls.find(url => !!url)! ?? null
-    imageUrl = frameUrl
+    console.error('Error processing collectible', e);
+    mediaType = 'IMAGE';
+    frameUrl = imageUrls.find(url => !!url)! ?? null;
+    imageUrl = frameUrl;
     if (imageUrl) {
-      usable = true
+      usable = true;
     }
   }
 
@@ -374,11 +383,11 @@ export const nftportAssetToCollectible = async (
     name: asset.name,
     description: asset.description,
     mediaType,
-    frameUrl,
-    imageUrl,
-    videoUrl,
-    threeDUrl,
-    gifUrl,
+    frameUrl: convertIpfsUrl(frameUrl),
+    imageUrl: convertIpfsUrl(imageUrl),
+    videoUrl: convertIpfsUrl(videoUrl),
+    threeDUrl: convertIpfsUrl(threeDUrl),
+    gifUrl: convertIpfsUrl(gifUrl),
     isOwned: true,
     dateCreated: null,
     dateLastTransferred: null,
@@ -389,39 +398,39 @@ export const nftportAssetToCollectible = async (
     owner: asset.owner,
     wallet: asset.wallet,
     collection: null,
-    usable
-  }
-}
+    usable,
+  };
+};
 
 export const creationEventToCollectible = async (
-  event: OpenSeaEventExtended
+  event: OpenSeaEventExtended,
 ): Promise<Collectible> => {
-  const { asset, created_date } = event
+  const { asset, created_date } = event;
 
-  const collectible = await assetToCollectible(asset)
+  const collectible = await assetToCollectible(asset);
 
   return {
     ...collectible,
     dateCreated: created_date,
-    isOwned: false
-  }
-}
+    isOwned: false,
+  };
+};
 
 export const transferEventToCollectible = async (
   event: OpenSeaEventExtended,
-  isOwned = true
+  isOwned = true,
 ): Promise<Collectible> => {
-  const { asset, created_date } = event
+  const { asset, created_date } = event;
 
-  const collectible = await assetToCollectible(asset)
+  const collectible = await assetToCollectible(asset);
 
   return {
     ...collectible,
     isOwned,
-    dateLastTransferred: created_date
-  }
-}
+    dateLastTransferred: created_date,
+  };
+};
 
 export const isFromNullAddress = (event: OpenSeaEvent) => {
-  return event.from_account.address === NULL_ADDRESS
-}
+  return event.from_account.address === NULL_ADDRESS;
+};
