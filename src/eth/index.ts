@@ -248,7 +248,7 @@ export class OpenSeaClient {
   public getAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
     try {
       const result = await this.sendGetRequest(`${this.url}/asset/${assetContractAddress}/${tokenId}`);
-      if (!result || (result && !result.success)) {
+      if (!result || (result && result.success === false)) {
         return null;
       }
       return assetToCollectible(result);
