@@ -412,7 +412,7 @@ export const nftportAssetToCollectible = async (
     chain: 'eth',
     owner: asset.owner,
     wallet: asset.wallet,
-    collection: null,
+    collection: asset.collection,
     usable,
   };
 };

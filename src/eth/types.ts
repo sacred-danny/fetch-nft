@@ -70,6 +70,7 @@ export type NftPortAsset = {
   creator_address: Nullable<string>
   owner: Nullable<any>
   metadata: Nullable<any>
+  collection: Nullable<any>
 }
 
 export type OpenSeaAssetExtended = OpenSeaAsset & { wallet: string }

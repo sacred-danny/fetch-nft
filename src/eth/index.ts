@@ -423,7 +423,7 @@ export class NftPortClient {
     exclude1155 = true,
   ): Promise<NftPortCollectiblePaginationDto> => {
     try {
-      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}${exclude1155 ? '?exclude=erc1155&' : '?'}chain=${this.chain}&include=metadata&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
+      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}${exclude1155 ? '?exclude=erc1155&' : '?'}chain=${this.chain}&include=metadata&include=contract_information&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
       if (!item || (item && !item?.nfts) || (item && item?.nfts && item.nfts?.length === 0)) {
         return {
           data: [],
@@ -447,6 +447,7 @@ export class NftPortClient {
           cached_file_url: nft?.cached_file_url || null,
           cached_animation_url: null,
           creator_address: null,
+          collection: nft?.contract,
           metadata: null,
           owner: {
             user: null,
@@ -504,7 +505,7 @@ export class NftPortClient {
 
   public getAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
     try {
-      const result = await this.sendGetRequest(`${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}`);
+      const result = await this.sendGetRequest(`${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}&refresh_metadata=true`);
       if (!result || (result && result?.response !== "OK") || (result && !result?.nft) || (result && !result?.owner)) {
         return null;
       }
@@ -522,6 +523,7 @@ export class NftPortClient {
         cached_file_url: result.nft?.cached_file_url || null,
         cached_animation_url: null,
         creator_address: null,
+        collection: result.nft?.contract,
         metadata: null,
         owner: {
           user: null,
