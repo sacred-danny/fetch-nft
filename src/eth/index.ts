@@ -523,7 +523,7 @@ export class NftPortClient {
         cached_file_url: result.nft?.cached_file_url || null,
         cached_animation_url: null,
         creator_address: null,
-        collection: result.nft?.contract,
+        collection: result?.contract,
         metadata: null,
         owner: {
           user: null,
