@@ -98,7 +98,7 @@ const convertIpfsUrl = (url: string): string => {
   } else {
     const subUrls = url.split('ipfs');
     if (subUrls.length > 1) {
-      return `${IPFS_GATEWAY}/ipfs/${subUrls[1]}`;
+      return `${IPFS_GATEWAY}${subUrls[1]}`;
     } else {
       return url;
     }
