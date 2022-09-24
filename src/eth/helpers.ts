@@ -138,7 +138,6 @@ export const assetToCollectible = async (
   let videoUrl = null;
   let threeDUrl = null;
   let gifUrl = null;
-  let usable = false;
 
   let { animation_url, animation_original_url } = asset;
   animation_url = convertIpfsUrl(animation_url);
@@ -156,9 +155,6 @@ export const assetToCollectible = async (
       // frame url for the gif is computed later in the collectibles page
       frameUrl = null;
       gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
-      if (gifUrl) {
-        usable = true;
-      }
     } else if (isAssetThreeDAndIncludesImage(asset)) {
       mediaType = 'THREE_D';
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
@@ -178,7 +174,6 @@ export const assetToCollectible = async (
           gifUrl = frameUrl;
           // frame url for the gif is computed later in the collectibles page
           frameUrl = null;
-          usable = true;
         }
       }
     } else if (isAssetVideo(asset)) {
@@ -198,16 +193,12 @@ export const assetToCollectible = async (
         const isGif = res.headers.get('Content-Type')?.includes('gif');
         if (isVideo || isGif) {
           frameUrl = null;
-          usable = true;
         }
       }
 
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext)),
       )! ?? null;
-      if (videoUrl) {
-        usable = true;
-      }
     } else {
       mediaType = 'IMAGE';
       frameUrl = imageUrls.find(url => !!url)! ?? null;
@@ -220,21 +211,12 @@ export const assetToCollectible = async (
           gifUrl = frameUrl;
           // frame url for the gif is computed later in the collectibles page
           frameUrl = null;
-          if (gifUrl) {
-            usable = true;
-          }
         } else if (isVideo) {
           mediaType = 'VIDEO';
           frameUrl = null;
           videoUrl = imageUrls.find(url => !!url)! ?? null;
-          if (videoUrl) {
-            usable = true;
-          }
         } else {
           imageUrl = imageUrls.find(url => !!url)! ?? null;
-          if (imageUrl) {
-            usable = true;
-          }
         }
       }
     }
@@ -243,9 +225,6 @@ export const assetToCollectible = async (
     mediaType = 'IMAGE';
     frameUrl = imageUrls.find(url => !!url)! ?? null;
     imageUrl = frameUrl;
-    if (imageUrl) {
-      usable = true;
-    }
   }
 
   return {
@@ -269,7 +248,6 @@ export const assetToCollectible = async (
     owner: asset.owner,
     wallet: asset.wallet,
     collection: asset.collection,
-    usable,
   };
 };
 
@@ -282,7 +260,6 @@ export const nftportAssetToCollectible = async (
   let videoUrl = null;
   let threeDUrl = null;
   let gifUrl = null;
-  let usable = false;
 
   let { animation_url, animation_original_url } = asset;
   animation_url = convertIpfsUrl(animation_url);
@@ -300,9 +277,6 @@ export const nftportAssetToCollectible = async (
       // frame url for the gif is computed later in the collectibles page
       frameUrl = null;
       gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
-      if (gifUrl) {
-        usable = true;
-      }
     } else if (isAssetThreeDAndIncludesImage(asset)) {
       mediaType = 'THREE_D';
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
@@ -322,7 +296,6 @@ export const nftportAssetToCollectible = async (
           gifUrl = frameUrl;
           // frame url for the gif is computed later in the collectibles page
           frameUrl = null;
-          usable = true;
         }
       }
     } else if (isAssetVideo(asset)) {
@@ -342,16 +315,12 @@ export const nftportAssetToCollectible = async (
         const isGif = res.headers.get('Content-Type')?.includes('gif');
         if (isVideo || isGif) {
           frameUrl = null;
-          usable = true;
         }
       }
 
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext)),
       )! ?? null;
-      if (videoUrl) {
-        usable = true;
-      }
     } else {
       mediaType = 'IMAGE';
       frameUrl = imageUrls.find(url => !!url)! ?? null;
@@ -362,23 +331,14 @@ export const nftportAssetToCollectible = async (
         if (isGif) {
           mediaType = 'GIF';
           gifUrl = frameUrl;
-          if (gifUrl) {
-            usable = true;
-          }
           // frame url for the gif is computed later in the collectibles page
           frameUrl = null;
         } else if (isVideo) {
           mediaType = 'VIDEO';
           frameUrl = null;
           videoUrl = imageUrls.find(url => !!url)! ?? null;
-          if (videoUrl) {
-            usable = true;
-          }
         } else {
           imageUrl = imageUrls.find(url => !!url)! ?? null;
-          if (imageUrl) {
-            usable = true;
-          }
         }
       }
     }
@@ -387,9 +347,6 @@ export const nftportAssetToCollectible = async (
     mediaType = 'IMAGE';
     frameUrl = imageUrls.find(url => !!url)! ?? null;
     imageUrl = frameUrl;
-    if (imageUrl) {
-      usable = true;
-    }
   }
 
   return {
@@ -413,7 +370,6 @@ export const nftportAssetToCollectible = async (
     owner: asset.owner,
     wallet: asset.wallet,
     collection: asset.collection,
-    usable,
   };
 };
 
