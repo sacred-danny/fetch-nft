@@ -2,7 +2,7 @@ import { Nullable } from 'utils/typeUtils'
 
 export type Chain = 'eth' | 'sol'
 
-export type CollectibleMediaType = 'IMAGE' | 'VIDEO' | 'GIF' | 'THREE_D'
+export type CollectibleMediaType = 'IMAGE' | 'VIDEO' | 'GIF' | 'THREE_D' | 'AUDIO' | 'HTML'
 
 export enum AssetStatus {
   New = "NEW",
