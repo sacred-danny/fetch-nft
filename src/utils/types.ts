@@ -4,6 +4,14 @@ export type Chain = 'eth' | 'sol'
 
 export type CollectibleMediaType = 'IMAGE' | 'VIDEO' | 'GIF' | 'THREE_D'
 
+export enum AssetStatus {
+  New = "NEW",
+  Ready = 'READY',
+  Listed = 'LISTED',
+  Locked = 'LOCKED',
+  Transferred = 'TRANSFERRED'
+}
+
 export type Collectible = {
   id?: string
   tokenId: string
@@ -26,6 +34,7 @@ export type Collectible = {
   wallet: string
   collection?: any
   owner?: any
+  status?: AssetStatus
 }
 
 export type NftPortCollectiblePaginationDto = {

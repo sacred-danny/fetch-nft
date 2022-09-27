@@ -1,5 +1,5 @@
 import { NftPortAssetExtended, OpenSeaAssetExtended, OpenSeaEvent, OpenSeaEventExtended } from 'eth/types';
-import { Collectible, CollectibleMediaType } from 'utils/types';
+import { AssetStatus, Collectible, CollectibleMediaType } from 'utils/types';
 
 /**
  * extensions based on OpenSea metadata standards
@@ -248,6 +248,7 @@ export const assetToCollectible = async (
     owner: asset.owner,
     wallet: asset.wallet,
     collection: asset.collection,
+    status: AssetStatus.New,
   };
 };
 
@@ -370,6 +371,7 @@ export const nftportAssetToCollectible = async (
     owner: asset.owner,
     wallet: asset.wallet,
     collection: asset.collection,
+    status: AssetStatus.New,
   };
 };
 
