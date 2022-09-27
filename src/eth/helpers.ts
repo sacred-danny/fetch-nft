@@ -15,6 +15,8 @@ const OPENSEA_VIDEO_EXTENSIONS = [
   'ogv',
   'ogg',
   'mov',
+  'html',
+  'html'
 ];
 
 const SUPPORTED_VIDEO_EXTENSIONS = ['webm', 'mp4', 'ogv', 'ogg', 'mov', 'html', 'htm'];
