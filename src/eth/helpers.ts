@@ -15,9 +15,11 @@ const OPENSEA_VIDEO_EXTENSIONS = [
   'ogv',
   'ogg',
   'mov',
+  'html',
+  'htm'
 ];
 
-const SUPPORTED_VIDEO_EXTENSIONS = ['webm', 'mp4', 'ogv', 'ogg', 'mov'];
+const SUPPORTED_VIDEO_EXTENSIONS = ['webm', 'mp4', 'ogv', 'ogg', 'mov', 'html', 'htm'];
 const SUPPORTED_3D_EXTENSIONS = ['gltf', 'glb'];
 
 const NON_IMAGE_EXTENSIONS = [
@@ -59,7 +61,7 @@ const areUrlExtensionsSupportedForType = (
 };
 
 const isAssetVideo = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
-  return areUrlExtensionsSupportedForType(asset, SUPPORTED_VIDEO_EXTENSIONS);
+  return asset.animation_url || asset.animation_original_url;
 };
 
 const isAssetThreeDAndIncludesImage = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
@@ -272,12 +274,48 @@ export const nftportAssetToCollectible = async (
   ];
 
   try {
-    if (isAssetGif(asset)) {
-      mediaType = 'GIF';
-      // frame url for the gif is computed later in the collectibles page
-      frameUrl = null;
-      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
-    } else if (isAssetThreeDAndIncludesImage(asset)) {
+    if (isAssetVideo(asset)) {
+      mediaType = 'VIDEO';
+
+      frameUrl =
+        imageUrls.find(
+          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
+        ) ?? null;
+
+      /**
+       * make sure frame url is not a video or a gif
+       * if it is, unset frame url so that component will use a video url frame instead
+       */
+      if (frameUrl && frameUrl.startsWith("http")) {
+        const res = await fetch(frameUrl, { method: 'HEAD' });
+        const isVideo = res.headers.get('Content-Type')?.includes('video');
+        const isGif = res.headers.get('Content-Type')?.includes('gif');
+        if (isVideo || isGif) {
+          frameUrl = null;
+        }
+      }
+
+      videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
+        url => !!url
+      )! ?? null;
+
+      // Determine if animation is video, html or audio
+      const res = await fetch(videoUrl, { method: 'HEAD' });
+      const _isVideo = res.headers.get('Content-Type')?.includes('video');
+      const _isAudio = res.headers.get('Content-Type')?.includes('audio');
+      const _isHtml = res.headers.get('Content-Type')?.includes('html');
+      
+      if (_isVideo) {
+        mediaType = 'VIDEO';
+      } else if (_isAudio) {
+        mediaType = 'AUDIO';
+      } else if (_isHtml) {
+        mediaType = 'HTML';
+      }
+
+      imageUrl = imageUrls.find(url => !!url)! ?? null;
+
+    }  else if (isAssetThreeDAndIncludesImage(asset)) {
       mediaType = 'THREE_D';
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext)),
@@ -298,29 +336,11 @@ export const nftportAssetToCollectible = async (
           frameUrl = null;
         }
       }
-    } else if (isAssetVideo(asset)) {
-      mediaType = 'VIDEO';
-      frameUrl =
-        imageUrls.find(
-          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
-        ) ?? null;
-
-      /**
-       * make sure frame url is not a video or a gif
-       * if it is, unset frame url so that component will use a video url frame instead
-       */
-      if (frameUrl && frameUrl.startsWith("http")) {
-        const res = await fetch(frameUrl, { method: 'HEAD' });
-        const isVideo = res.headers.get('Content-Type')?.includes('video');
-        const isGif = res.headers.get('Content-Type')?.includes('gif');
-        if (isVideo || isGif) {
-          frameUrl = null;
-        }
-      }
-
-      videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
-        url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext)),
-      )! ?? null;
+    } else if (isAssetGif(asset)) {
+      mediaType = 'GIF';
+      // frame url for the gif is computed later in the collectibles page
+      frameUrl = null;
+      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
     } else {
       mediaType = 'IMAGE';
       frameUrl = imageUrls.find(url => !!url)! ?? null;
