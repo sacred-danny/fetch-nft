@@ -43,6 +43,12 @@ export type NftPortCollectiblePaginationDto = {
   count: number;
 }
 
+export type NftPortCollectionPaginationDto = {
+  data: CollectionInfo[],
+  continuation?: string,
+  count: number;
+}
+
 export type NftPortCollectionInfoPaginationDto = {
   data: CollectionInfo[],
   continuation?: string,

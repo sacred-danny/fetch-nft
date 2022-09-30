@@ -17,7 +17,7 @@ import {
   Collectible,
   CollectibleState,
   CollectionInfo,
-  NftPortCollectiblePaginationDto,
+  NftPortCollectiblePaginationDto, NftPortCollectionPaginationDto,
 } from 'utils/types';
 
 const OPENSEA_API_URL = 'https://api.opensea.io/api/v1';
@@ -474,32 +474,37 @@ export class NftPortClient {
     }
   };
 
-  public getAllCollections = async (wallet: string): Promise<CollectionInfo[]> => {
+  public getAllCollections = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectionPaginationDto> => {
     try {
-      let result: any[] = [];
-      let continuation = null;
-      while (1) {
-        const item = await this.sendGetRequest(`${this.url}/v0/accounts/contracts/${wallet}?chain=${this.chain}&type=owns_contract_nfts&page_size=${this.assetLimit}${continuation ? ('&continuation=' + continuation) : ''}`);
-        if (!item || (item && !item?.contracts) || (item && item?.contracts && item?.contracts.length === 0)) {
-          break;
-        }
-        result = [...result, ...item?.contracts.map((item: any) => {
-          return {
-            name: item.name || '',
-            slug: item?.slug || '',
-            imageUrl: item?.metadata?.thumbnail_url || '',
-            contractAddress: (item?.address || '').toLowerCase(),
-            safeListRequestStatus: item?.safelist_request_status || '',
-            numNftsOwned: item?.num_nfts_owned || 0,
-          };
-        })];
-        if (!item.continuation) {
-          break;
-        }
+      const item: any = await this.sendGetRequest(`${this.url}/v0/accounts/contracts/${wallet}?chain=${this.chain}&type=owns_contract_nfts&page_size=${limit ? limit : this.assetLimit}${continuation ? ('&continuation=' + continuation) : ''}`);
+      if (!item || (item && !item?.contracts) || (item && item?.contracts && item?.contracts.length === 0)) {
+        return {
+          data: [],
+          continuation: null,
+          count: 0,
+        };
       }
-      return result;
+      const data = item?.contracts.map((item: any) => {
+        return {
+          name: item.name || '',
+          slug: item?.slug || '',
+          imageUrl: item?.metadata?.thumbnail_url || '',
+          contractAddress: (item?.address || '').toLowerCase(),
+          safeListRequestStatus: item?.safelist_request_status || '',
+          numNftsOwned: item?.num_nfts_owned || 0,
+        };
+      });
+      return {
+        data,
+        continuation: item.continuation,
+        count: item.total,
+      };
     } catch (e) {
-      return [];
+      return {
+        data: [],
+        continuation: null,
+        count: 0,
+      };
     }
   };
 

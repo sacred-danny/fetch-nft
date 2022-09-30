@@ -5,7 +5,7 @@ import {
   CollectibleState,
   CollectionInfo,
   NftPortCollectiblePaginationDto,
-  NftPortCollectionInfoPaginationDto
+  NftPortCollectionInfoPaginationDto, NftPortCollectionPaginationDto,
 } from 'utils/types';
 
 import 'cross-fetch/polyfill'
@@ -43,8 +43,8 @@ export class FetchNFTClient {
     return await this.ethClient.getAllCollections(wallet);
   }
 
-  public getAllCollectionsFromNftPort = async (wallet: string): Promise<CollectionInfo[]> => {
-    return await this.nftPortClient.getAllCollections(wallet);
+  public getAllCollectionsFromNftPort = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectionPaginationDto> => {
+    return await this.nftPortClient.getAllCollections(wallet, limit, continuation);
   }
 
   public getEthereumAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
