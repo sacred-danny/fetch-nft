@@ -43,8 +43,8 @@ export class FetchNFTClient {
     return await this.ethClient.getAllCollections(wallet);
   }
 
-  public getAllCollectionsFromNftPort = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectionPaginationDto> => {
-    return await this.nftPortClient.getAllCollections(wallet, limit, continuation);
+  public getCollectionsFromNftPort = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectionPaginationDto> => {
+    return await this.nftPortClient.getCollections(wallet, limit, continuation);
   }
 
   public getEthereumAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
