@@ -1,3 +1,4 @@
+import axios, { AxiosResponse, AxiosError } from "axios";
 import { NftPortAssetExtended, OpenSeaAssetExtended, OpenSeaEvent, OpenSeaEventExtended } from 'eth/types';
 import { AssetStatus, Collectible, CollectibleMediaType } from 'utils/types';
 
@@ -37,6 +38,31 @@ const isAssetImage = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
     asset.image_thumbnail_url,
   ].some(url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)));
 };
+
+type ImageConvertResponse = {
+  message?: string;
+  error?: string;
+  magic_url?: string;
+  dir?: string;
+};
+
+const getGucUrl = (img_url: string): Promise<string> => {
+  return axios
+    .get<ImageConvertResponse>(
+      `https://image-manager-363021.uk.r.appspot.com/?url=${img_url}`
+    )
+    .then((response: AxiosResponse) => {
+      if (response.status === 200) {
+        return response.data.magic_url;
+      }
+      return null;
+    })
+    .catch((e: AxiosError) => {
+      console.log(e);
+      return null;
+    });
+};
+
 
 const areUrlExtensionsSupportedForType = (
   asset: OpenSeaAssetExtended | NftPortAssetExtended,
@@ -277,45 +303,24 @@ export const nftportAssetToCollectible = async (
   try {
     if (isAssetVideo(asset)) {
       mediaType = 'VIDEO';
-
-      frameUrl =
-        imageUrls.find(
-          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
-        ) ?? null;
-
-      /**
-       * make sure frame url is not a video or a gif
-       * if it is, unset frame url so that component will use a video url frame instead
-       */
-      if (frameUrl && frameUrl.startsWith("http")) {
-        const res = await fetch(frameUrl, { method: 'HEAD' });
-        const isVideo = res.headers.get('Content-Type')?.includes('video');
-        const isGif = res.headers.get('Content-Type')?.includes('gif');
-        if (isVideo || isGif) {
-          frameUrl = null;
-        }
-      }
-
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => !!url
       )! ?? null;
-
-      // Determine if animation is video, html or audio
-      const res = await fetch(videoUrl, { method: 'HEAD' });
-      const _isVideo = res.headers.get('Content-Type')?.includes('video');
-      const _isAudio = res.headers.get('Content-Type')?.includes('audio');
-      const _isHtml = res.headers.get('Content-Type')?.includes('html');
-      
-      if (_isVideo) {
+      const res = await fetch(videoUrl, { method: 'HEAD', mode: 'no-cors' });
+      const isVideo = res.headers.get('Content-Type')?.includes('video');
+      const isGif = res.headers.get('Content-Type')?.includes('gif');
+      const isAudio = res.headers.get('Content-Type')?.includes('audio');
+      const isHtml = res.headers.get('Content-Type')?.includes('html');
+      if (isVideo) {
         mediaType = 'VIDEO';
-      } else if (_isAudio) {
+      } else if (isGif) {
+        mediaType = 'GIF';
+      } else if (isAudio) {
         mediaType = 'AUDIO';
-      } else if (_isHtml) {
+      } else if (isHtml || videoUrl.endsWith('html') || videoUrl.endsWith('htm')) {
         mediaType = 'HTML';
       }
-
       imageUrl = imageUrls.find(url => !!url)! ?? null;
-
     }  else if (isAssetThreeDAndIncludesImage(asset)) {
       mediaType = 'THREE_D';
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
@@ -324,42 +329,43 @@ export const nftportAssetToCollectible = async (
       frameUrl = imageUrls.find(
         url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
       )! ?? null;
-      // image urls may not end in known extensions
-      // just because the don't end with the NON_IMAGE_EXTENSIONS above does not mean they are images
-      // they may be gifs
-      // example: https://lh3.googleusercontent.com/rOopRU-wH9mqMurfvJ2INLIGBKTtF8BN_XC7KZxTh8PPHt5STSNJ-i8EQit8ZTwE3Mi8LK4on_4YazdC3Cl-HdaxbnKJ23P8kocvJHQ
       if (frameUrl && frameUrl.startsWith("http")) {
-        const res = await fetch(frameUrl, { method: 'HEAD' });
-        const hasGifFrame = res.headers.get('Content-Type')?.includes('gif');
-        if (hasGifFrame) {
+        const res = await fetch(frameUrl, { method: 'HEAD', mode: 'no-cors' });
+        const isGif = res.headers.get('Content-Type')?.includes('gif');
+        if (isGif) {
+          mediaType = 'GIF';
           gifUrl = frameUrl;
-          // frame url for the gif is computed later in the collectibles page
           frameUrl = null;
         }
       }
     } else if (isAssetGif(asset)) {
       mediaType = 'GIF';
-      // frame url for the gif is computed later in the collectibles page
       frameUrl = null;
       gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
     } else {
       mediaType = 'IMAGE';
       frameUrl = imageUrls.find(url => !!url)! ?? null;
       if (frameUrl && frameUrl.startsWith("http")) {
-        const res = await fetch(frameUrl, { method: 'HEAD' });
-        const isGif = res.headers.get('Content-Type')?.includes('gif');
-        const isVideo = res.headers.get('Content-Type')?.includes('video');
-        if (isGif) {
-          mediaType = 'GIF';
-          gifUrl = frameUrl;
-          // frame url for the gif is computed later in the collectibles page
-          frameUrl = null;
-        } else if (isVideo) {
-          mediaType = 'VIDEO';
-          frameUrl = null;
-          videoUrl = imageUrls.find(url => !!url)! ?? null;
-        } else {
-          imageUrl = imageUrls.find(url => !!url)! ?? null;
+        try {
+          const res = await fetch(frameUrl, { method: 'HEAD', mode: 'no-cors' });
+          const isGif = res.headers.get('Content-Type')?.includes('gif');
+          const isVideo = res.headers.get('Content-Type')?.includes('video');
+          const isImageOrSvg = res.headers.get('Content-Type')?.includes('image/svg+xml');
+          if (isGif) {
+            mediaType = 'GIF';
+            gifUrl = frameUrl;
+            frameUrl = null;
+          } else if (isVideo) {
+            mediaType = 'VIDEO';
+            frameUrl = null;
+            videoUrl = imageUrls.find(url => !!url)! ?? null;
+          } else if (isImageOrSvg) {
+            imageUrl = imageUrls.find(url => !!url)! ?? null;
+          } else {
+            imageUrl = await getGucUrl(frameUrl ?? "");
+          }
+        } catch (e) {
+          imageUrl = await getGucUrl(frameUrl ?? "");
         }
       }
     }
