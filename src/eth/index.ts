@@ -89,7 +89,7 @@ export class OpenSeaClient {
     // Default options are marked with *
     const response = await fetch(url, {
       method: 'GET', // *GET, POST, PUT, DELETE, etc.
-      mode: 'cors', // no-cors, *cors, same-origin
+      mode: 'no-cors', // no-cors, *cors, same-origin
       cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
       credentials: 'same-origin', // include, *same-origin, omit
       headers: {
@@ -474,7 +474,7 @@ export class NftPortClient {
     }
   };
 
-  public getAllCollections = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectionPaginationDto> => {
+  public getCollections = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectionPaginationDto> => {
     try {
       const item: any = await this.sendGetRequest(`${this.url}/v0/accounts/contracts/${wallet}?chain=${this.chain}&type=owns_contract_nfts&page_size=${limit ? limit : this.assetLimit}${continuation ? ('&continuation=' + continuation) : ''}`);
       if (!item || (item && !item?.contracts) || (item && item?.contracts && item?.contracts.length === 0)) {
