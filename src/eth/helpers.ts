@@ -1,4 +1,3 @@
-import axios, { AxiosResponse, AxiosError } from "axios";
 import { NftPortAssetExtended, OpenSeaAssetExtended, OpenSeaEvent, OpenSeaEventExtended } from 'eth/types';
 import { AssetStatus, Collectible, CollectibleMediaType } from 'utils/types';
 
@@ -39,28 +38,19 @@ const isAssetImage = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
   ].some(url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)));
 };
 
-type ImageConvertResponse = {
+interface ImageConvertResponse {
   message?: string;
   error?: string;
   magic_url?: string;
   dir?: string;
-};
+}
 
 const getGucUrl = (img_url: string): Promise<string> => {
-  return axios
-    .get<ImageConvertResponse>(
-      `https://image-manager-363021.uk.r.appspot.com/?url=${img_url}`
-    )
-    .then((response: AxiosResponse) => {
-      if (response.status === 200) {
-        return response.data.magic_url;
-      }
-      return null;
-    })
-    .catch((e: AxiosError) => {
-      console.log(e);
-      return null;
-    });
+  return fetch(`https://image-manager-363021.uk.r.appspot.com/?url=${img_url}`).then((response) => response.json()).then((data: ImageConvertResponse) => {
+    return data.magic_url ?? null;
+  }).catch(() => {
+    return null;
+  });
 };
 
 
@@ -306,7 +296,7 @@ export const nftportAssetToCollectible = async (
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => !!url
       )! ?? null;
-      const res = await fetch(videoUrl, { method: 'HEAD', mode: 'no-cors' });
+      const res = await fetch(videoUrl, { method: 'HEAD' });
       const isVideo = res.headers.get('Content-Type')?.includes('video');
       const isGif = res.headers.get('Content-Type')?.includes('gif');
       const isAudio = res.headers.get('Content-Type')?.includes('audio');
@@ -317,7 +307,7 @@ export const nftportAssetToCollectible = async (
         mediaType = 'GIF';
       } else if (isAudio) {
         mediaType = 'AUDIO';
-      } else if (isHtml || videoUrl.endsWith('html') || videoUrl.endsWith('htm')) {
+      } else if (isHtml || (videoUrl || "").toLowerCase().endsWith('html') || (videoUrl || "").toLowerCase().endsWith('htm')) {
         mediaType = 'HTML';
       }
       imageUrl = imageUrls.find(url => !!url)! ?? null;
@@ -330,7 +320,7 @@ export const nftportAssetToCollectible = async (
         url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
       )! ?? null;
       if (frameUrl && frameUrl.startsWith("http")) {
-        const res = await fetch(frameUrl, { method: 'HEAD', mode: 'no-cors' });
+        const res = await fetch(frameUrl, { method: 'HEAD' });
         const isGif = res.headers.get('Content-Type')?.includes('gif');
         if (isGif) {
           mediaType = 'GIF';
@@ -347,7 +337,7 @@ export const nftportAssetToCollectible = async (
       frameUrl = imageUrls.find(url => !!url)! ?? null;
       if (frameUrl && frameUrl.startsWith("http")) {
         try {
-          const res = await fetch(frameUrl, { method: 'HEAD', mode: 'no-cors' });
+          const res = await fetch(frameUrl, { method: 'HEAD' });
           const isGif = res.headers.get('Content-Type')?.includes('gif');
           const isVideo = res.headers.get('Content-Type')?.includes('video');
           const isImageOrSvg = res.headers.get('Content-Type')?.includes('image/svg+xml');
