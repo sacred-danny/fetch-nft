@@ -474,6 +474,29 @@ export class NftPortClient {
     }
   };
 
+  public getCollection = async (assetContractAddress: string, tokenId: string): Promise<CollectionInfo> => {
+    try {
+      const result = await this.sendGetRequest(`${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}&refresh_metadata=true`);
+      if (!result) {
+        return null;
+      }
+      return {
+        name: result?.contract?.name || '',
+        slug: result?.contract?.slug || '',
+        imageUrl: result?.contract?.metadata?.thumbnail_url || '',
+        contractAddress: result?.nft?.contract_address,
+        safeListRequestStatus: '',
+        openListingCount: 0,
+        closeListingCount: 0,
+        openLoanCount: 0,
+        closeLoanCount: 0,
+      };
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
+
   public getCollections = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectionPaginationDto> => {
     try {
       const item: any = await this.sendGetRequest(`${this.url}/v0/accounts/contracts/${wallet}?chain=${this.chain}&type=owns_contract_nfts&page_size=${limit ? limit : this.assetLimit}${continuation ? ('&continuation=' + continuation) : ''}`);
