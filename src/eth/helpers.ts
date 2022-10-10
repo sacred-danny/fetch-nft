@@ -289,29 +289,11 @@ export const nftportAssetToCollectible = async (
     convertIpfsUrl(asset.image_preview_url),
     convertIpfsUrl(asset.image_thumbnail_url),
   ];
+  const checkUrl = imageUrls.find(url => !!url)! ?? null;
 
-  try {
-    if (isAssetVideo(asset)) {
-      mediaType = 'VIDEO';
-      videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
-        url => !!url
-      )! ?? null;
-      const res = await fetch(videoUrl, { method: 'HEAD' });
-      const isVideo = res.headers.get('Content-Type')?.includes('video');
-      const isGif = res.headers.get('Content-Type')?.includes('gif');
-      const isAudio = res.headers.get('Content-Type')?.includes('audio');
-      const isHtml = res.headers.get('Content-Type')?.includes('html');
-      if (isVideo) {
-        mediaType = 'VIDEO';
-      } else if (isGif) {
-        mediaType = 'GIF';
-      } else if (isAudio) {
-        mediaType = 'AUDIO';
-      } else if (isHtml || (videoUrl || "").toLowerCase().endsWith('html') || (videoUrl || "").toLowerCase().endsWith('htm')) {
-        mediaType = 'HTML';
-      }
-      imageUrl = imageUrls.find(url => !!url)! ?? null;
-    }  else if (isAssetThreeDAndIncludesImage(asset)) {
+  if (checkUrl && (checkUrl.includes('googleusercontent') || checkUrl.includes('data:image') || checkUrl.includes('ipfs'))) {
+    imageUrl = checkUrl;
+    if (isAssetThreeDAndIncludesImage(asset)) {
       mediaType = 'THREE_D';
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext)),
@@ -319,51 +301,107 @@ export const nftportAssetToCollectible = async (
       frameUrl = imageUrls.find(
         url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
       )! ?? null;
-      if (frameUrl && frameUrl.startsWith("http")) {
-        const res = await fetch(frameUrl, { method: 'HEAD' });
-        const isGif = res.headers.get('Content-Type')?.includes('gif');
-        if (isGif) {
-          mediaType = 'GIF';
-          gifUrl = frameUrl;
-          frameUrl = null;
-        }
+      if (frameUrl && frameUrl.toLowerCase().endsWith('gif')) {
+        mediaType = 'GIF';
+        gifUrl = frameUrl;
+        frameUrl = null;
       }
     } else if (isAssetGif(asset)) {
       mediaType = 'GIF';
       frameUrl = null;
       gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
+    } if (isAssetVideo(asset)) {
+      mediaType = 'VIDEO';
+      videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
+        url => !!url
+      )! ?? null;
+      const isAudio = frameUrl = imageUrls.find(
+        url => url && OPENSEA_AUDIO_EXTENSIONS.every(ext => url.endsWith(ext)),
+      )! ?? null;
+      if (isAudio) {
+        mediaType = 'AUDIO';
+      } else if ((videoUrl || "").toLowerCase().endsWith('html') || (videoUrl || "").toLowerCase().endsWith('htm')) {
+        mediaType = 'HTML';
+      }
     } else {
       mediaType = 'IMAGE';
-      frameUrl = imageUrls.find(url => !!url)! ?? null;
-      if (frameUrl && frameUrl.startsWith("http")) {
-        try {
+    }
+  } else {
+    try {
+      if (isAssetVideo(asset)) {
+        mediaType = 'VIDEO';
+        videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
+          url => !!url
+        )! ?? null;
+        const res = await fetch(videoUrl, { method: 'HEAD' });
+        const isVideo = res.headers.get('Content-Type')?.includes('video');
+        const isGif = res.headers.get('Content-Type')?.includes('gif');
+        const isAudio = res.headers.get('Content-Type')?.includes('audio');
+        const isHtml = res.headers.get('Content-Type')?.includes('html');
+        if (isVideo) {
+          mediaType = 'VIDEO';
+        } else if (isGif) {
+          mediaType = 'GIF';
+        } else if (isAudio) {
+          mediaType = 'AUDIO';
+        } else if (isHtml || (videoUrl || "").toLowerCase().endsWith('html') || (videoUrl || "").toLowerCase().endsWith('htm')) {
+          mediaType = 'HTML';
+        }
+        imageUrl = imageUrls.find(url => !!url)! ?? null;
+      }  else if (isAssetThreeDAndIncludesImage(asset)) {
+        mediaType = 'THREE_D';
+        threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
+          url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext)),
+        )! ?? null;
+        frameUrl = imageUrls.find(
+          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
+        )! ?? null;
+        if (frameUrl && frameUrl.startsWith("http")) {
           const res = await fetch(frameUrl, { method: 'HEAD' });
           const isGif = res.headers.get('Content-Type')?.includes('gif');
-          const isVideo = res.headers.get('Content-Type')?.includes('video');
-          const isImageOrSvg = res.headers.get('Content-Type')?.includes('image/svg+xml');
           if (isGif) {
             mediaType = 'GIF';
             gifUrl = frameUrl;
             frameUrl = null;
-          } else if (isVideo) {
-            mediaType = 'VIDEO';
-            frameUrl = null;
-            videoUrl = imageUrls.find(url => !!url)! ?? null;
-          } else if (isImageOrSvg) {
-            imageUrl = imageUrls.find(url => !!url)! ?? null;
-          } else {
+          }
+        }
+      } else if (isAssetGif(asset)) {
+        mediaType = 'GIF';
+        frameUrl = null;
+        gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
+      } else {
+        mediaType = 'IMAGE';
+        frameUrl = imageUrls.find(url => !!url)! ?? null;
+        if (frameUrl && frameUrl.startsWith("http")) {
+          try {
+            const res = await fetch(frameUrl, { method: 'HEAD' });
+            const isGif = res.headers.get('Content-Type')?.includes('gif');
+            const isVideo = res.headers.get('Content-Type')?.includes('video');
+            const isImageOrSvg = res.headers.get('Content-Type')?.includes('image/svg+xml');
+            if (isGif) {
+              mediaType = 'GIF';
+              gifUrl = frameUrl;
+              frameUrl = null;
+            } else if (isVideo) {
+              mediaType = 'VIDEO';
+              frameUrl = null;
+              videoUrl = imageUrls.find(url => !!url)! ?? null;
+            } else if (isImageOrSvg) {
+              imageUrl = imageUrls.find(url => !!url)! ?? null;
+            } else {
+              imageUrl = await getGucUrl(frameUrl ?? "");
+            }
+          } catch (e) {
             imageUrl = await getGucUrl(frameUrl ?? "");
           }
-        } catch (e) {
-          imageUrl = await getGucUrl(frameUrl ?? "");
         }
       }
+    } catch (e) {
+      console.error('Error processing collectible', e);
+      mediaType = 'IMAGE';
+      frameUrl = imageUrls.find(url => !!url)! ?? null;
+      imageUrl = frameUrl;
     }
-  } catch (e) {
-    console.error('Error processing collectible', e);
-    mediaType = 'IMAGE';
-    frameUrl = imageUrls.find(url => !!url)! ?? null;
-    imageUrl = frameUrl;
   }
 
   return {
