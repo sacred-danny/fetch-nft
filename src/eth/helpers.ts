@@ -270,6 +270,15 @@ export const assetToCollectible = async (
   };
 };
 
+const checkHasExtension = (url: string) : boolean => {
+  if (!url) {
+    return false;
+  }
+  const parts = url.split('/');
+  const last = parts.pop();
+  return ( parts.length > 3 ) && ( last.indexOf('.') != -1 );
+};
+
 export const nftportAssetToCollectible = async (
   asset: NftPortAssetExtended,
 ): Promise<Collectible> => {
@@ -315,13 +324,42 @@ export const nftportAssetToCollectible = async (
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => !!url
       )! ?? null;
-      const isAudio = frameUrl = imageUrls.find(
+      const isAudio = [animation_url, animation_original_url].find(
         url => url && OPENSEA_AUDIO_EXTENSIONS.every(ext => url.endsWith(ext)),
+      )! ?? null;
+      const isVideo = [animation_url, animation_original_url].find(
+        url => url && OPENSEA_VIDEO_EXTENSIONS.every(ext => url.endsWith(ext)),
+      )! ?? null;
+      const hasExtension = [animation_url, animation_original_url].find(
+        url => url && checkHasExtension(url),
       )! ?? null;
       if (isAudio) {
         mediaType = 'AUDIO';
-      } else if ((videoUrl || "").toLowerCase().endsWith('html') || (videoUrl || "").toLowerCase().endsWith('htm')) {
-        mediaType = 'HTML';
+      } else if (isVideo) {
+        if ((videoUrl || "").toLowerCase().endsWith('html') || (videoUrl || "").toLowerCase().endsWith('htm')) {
+          mediaType = 'HTML';
+        } else {
+          mediaType = 'VIDEO';
+        }
+      } else {
+        if (!hasExtension) {
+          try {
+            const res = await fetch(videoUrl, { method: 'HEAD' });
+            const isVideo = res.headers.get('Content-Type')?.includes('video');
+            const isGif = res.headers.get('Content-Type')?.includes('gif');
+            const isAudio = res.headers.get('Content-Type')?.includes('audio');
+            const isHtml = res.headers.get('Content-Type')?.includes('html');
+            if (isVideo) {
+              mediaType = 'VIDEO';
+            } else if (isGif) {
+              mediaType = 'GIF';
+            } else if (isAudio) {
+              mediaType = 'AUDIO';
+            } else if (isHtml || (videoUrl || "").toLowerCase().endsWith('html') || (videoUrl || "").toLowerCase().endsWith('htm')) {
+              mediaType = 'HTML';
+            }
+          } catch (e) {}
+        }
       }
     } else {
       mediaType = 'IMAGE';
