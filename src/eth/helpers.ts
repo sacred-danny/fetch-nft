@@ -289,6 +289,12 @@ export const nftportAssetToCollectible = async (
   let threeDUrl = null;
   let gifUrl = null;
 
+  Object.keys(asset).map((key: string) => {
+    if (typeof asset[key] === 'string' && key !== 'description') {
+      asset[key] = asset[key].toLowerCase();
+    }
+  });
+
   let { animation_url, animation_original_url } = asset;
   animation_url = convertIpfsUrl(animation_url);
   animation_original_url = convertIpfsUrl(animation_original_url);
