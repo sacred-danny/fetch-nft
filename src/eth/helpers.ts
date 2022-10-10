@@ -35,7 +35,7 @@ const isAssetImage = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
     asset.image_original_url,
     asset.image_preview_url,
     asset.image_thumbnail_url,
-  ].some(url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)));
+  ].some(url => url && NON_IMAGE_EXTENSIONS.every(ext => !(url || "").toLowerCase().endsWith(ext)));
 };
 
 interface ImageConvertResponse {
@@ -73,7 +73,7 @@ const areUrlExtensionsSupportedForType = (
     image_original_url,
     image_preview_url,
     image_thumbnail_url,
-  ].some(url => url && extensions.some(ext => url.endsWith(ext)));
+  ].some(url => url && extensions.some(ext => (url || "").toLowerCase().endsWith(ext)));
 };
 
 const isAssetVideo = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
@@ -89,10 +89,10 @@ const isAssetThreeDAndIncludesImage = (asset: OpenSeaAssetExtended | NftPortAsse
 
 const isAssetGif = (asset: OpenSeaAssetExtended | NftPortAssetExtended) => {
   return !!(
-    asset.image_url?.endsWith('.gif') ||
-    asset.image_original_url?.endsWith('.gif') ||
-    asset.image_preview_url?.endsWith('.gif') ||
-    asset.image_thumbnail_url?.endsWith('.gif')
+    (asset.image_url || "").toLowerCase().endsWith('.gif') ||
+    (asset.image_original_url || "").toLowerCase().endsWith('.gif') ||
+    (asset.image_preview_url || "").toLowerCase().endsWith('.gif') ||
+    (asset.image_thumbnail_url || "").toLowerCase().endsWith('.gif')
   );
 };
 
@@ -172,17 +172,17 @@ export const assetToCollectible = async (
       mediaType = 'GIF';
       // frame url for the gif is computed later in the collectibles page
       frameUrl = null;
-      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
+      gifUrl = imageUrls.find(url => (url || "").toLowerCase().endsWith('.gif'))! ?? null;
     } else if (isAssetThreeDAndIncludesImage(asset)) {
       mediaType = 'THREE_D';
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
-        url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext)),
+        url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.toLowerCase().endsWith(ext)),
       )! ?? null;
       frameUrl = imageUrls.find(
-        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
+        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.toLowerCase().endsWith(ext)),
       )! ?? null;
       // image urls may not end in known extensions
-      // just because the don't end with the NON_IMAGE_EXTENSIONS above does not mean they are images
+      // just because don't end with the NON_IMAGE_EXTENSIONS above does not mean they are images
       // they may be gifs
       // example: https://lh3.googleusercontent.com/rOopRU-wH9mqMurfvJ2INLIGBKTtF8BN_XC7KZxTh8PPHt5STSNJ-i8EQit8ZTwE3Mi8LK4on_4YazdC3Cl-HdaxbnKJ23P8kocvJHQ
       if (frameUrl && frameUrl.startsWith("http")) {
@@ -198,7 +198,7 @@ export const assetToCollectible = async (
       mediaType = 'VIDEO';
       frameUrl =
         imageUrls.find(
-          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
+          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.toLowerCase().endsWith(ext)),
         ) ?? null;
 
       /**
@@ -215,7 +215,7 @@ export const assetToCollectible = async (
       }
 
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
-        url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext)),
+        url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.toLowerCase().endsWith(ext)),
       )! ?? null;
     } else {
       mediaType = 'IMAGE';
@@ -289,12 +289,6 @@ export const nftportAssetToCollectible = async (
   let threeDUrl = null;
   let gifUrl = null;
 
-  Object.keys(asset).map((key: string) => {
-    if (typeof asset[key] === 'string' && key !== 'description') {
-      asset[key] = asset[key].toLowerCase();
-    }
-  });
-
   let { animation_url, animation_original_url } = asset;
   animation_url = convertIpfsUrl(animation_url);
   animation_original_url = convertIpfsUrl(animation_original_url);
@@ -311,10 +305,10 @@ export const nftportAssetToCollectible = async (
     if (isAssetThreeDAndIncludesImage(asset)) {
       mediaType = 'THREE_D';
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
-        url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext)),
+        url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.toLowerCase().endsWith(ext)),
       )! ?? null;
       frameUrl = imageUrls.find(
-        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
+        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.toLowerCase().endsWith(ext)),
       )! ?? null;
       if (frameUrl && frameUrl.toLowerCase().endsWith('gif')) {
         mediaType = 'GIF';
@@ -324,17 +318,17 @@ export const nftportAssetToCollectible = async (
     } else if (isAssetGif(asset)) {
       mediaType = 'GIF';
       frameUrl = null;
-      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
+      gifUrl = imageUrls.find(url => (url || "").toLowerCase().endsWith('.gif'))! ?? null;
     } if (isAssetVideo(asset)) {
       mediaType = 'VIDEO';
       videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => !!url
       )! ?? null;
       const isAudio = [animation_url, animation_original_url].find(
-        url => url && OPENSEA_AUDIO_EXTENSIONS.every(ext => url.endsWith(ext)),
+        url => url && OPENSEA_AUDIO_EXTENSIONS.every(ext => (url || "").toLowerCase().endsWith(ext)),
       )! ?? null;
       const isVideo = [animation_url, animation_original_url].find(
-        url => url && OPENSEA_VIDEO_EXTENSIONS.every(ext => url.endsWith(ext)),
+        url => url && OPENSEA_VIDEO_EXTENSIONS.every(ext => (url || "").toLowerCase().endsWith(ext)),
       )! ?? null;
       const hasExtension = [animation_url, animation_original_url].find(
         url => url && checkHasExtension(url),
@@ -395,10 +389,10 @@ export const nftportAssetToCollectible = async (
       }  else if (isAssetThreeDAndIncludesImage(asset)) {
         mediaType = 'THREE_D';
         threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
-          url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext)),
+          url => url && SUPPORTED_3D_EXTENSIONS.some(ext => (url || "").toLowerCase().endsWith(ext)),
         )! ?? null;
         frameUrl = imageUrls.find(
-          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)),
+          url => url && NON_IMAGE_EXTENSIONS.every(ext => !(url || "").toLowerCase().endsWith(ext)),
         )! ?? null;
         if (frameUrl && frameUrl.startsWith("http")) {
           const res = await fetch(frameUrl, { method: 'HEAD' });
@@ -412,7 +406,7 @@ export const nftportAssetToCollectible = async (
       } else if (isAssetGif(asset)) {
         mediaType = 'GIF';
         frameUrl = null;
-        gifUrl = imageUrls.find(url => url?.endsWith('.gif'))! ?? null;
+        gifUrl = imageUrls.find(url => (url || "").toLowerCase().endsWith('.gif'))! ?? null;
       } else {
         mediaType = 'IMAGE';
         frameUrl = imageUrls.find(url => !!url)! ?? null;
