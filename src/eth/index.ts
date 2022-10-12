@@ -5,9 +5,10 @@ import {
   assetToCollectible,
   creationEventToCollectible,
   transferEventToCollectible,
-  isFromNullAddress, nftportAssetToCollectible,
+  isFromNullAddress, convertIpfsUrl,
 } from 'eth/helpers';
 import {
+  NftPortAssetExtended,
   OpenSeaAsset,
   OpenSeaAssetExtended,
   OpenSeaEvent,
@@ -431,37 +432,33 @@ export class NftPortClient {
           count: 0,
         };
       }
-      const data = [];
-      for await (const nft of item.nfts) {
-        const collectible = await nftportAssetToCollectible({
-          token_id: nft?.token_id,
-          contract_address: nft?.contract_address,
-          name: nft?.name || nft?.metadata?.name || null,
-          description: nft?.description || nft?.metadata?.description || null,
-          image_url: nft?.file_url || nft?.cached_file_url || null,
-          image_preview_url: null,
-          image_thumbnail_url: null,
-          image_original_url: null,
-          animation_url: nft?.animation_url || nft?.cached_animation_url || null,
-          animation_original_url: null,
-          cached_file_url: nft?.cached_file_url || null,
-          cached_animation_url: null,
-          creator_address: null,
-          collection: nft?.contract,
-          metadata: null,
-          owner: {
-            user: null,
-            address: wallet.toLowerCase(),
-            profileImageUrl: null,
-            config: '',
-          },
-          wallet: wallet.toLowerCase(),
-        });
-        data.push(collectible);
-      }
-
       return {
-        data,
+        data: item?.nfts.map((nft: any) => {
+          return {
+            token_id: nft?.token_id,
+            contract_address: nft?.contract_address,
+            name: nft?.name || nft?.metadata?.name || null,
+            description: nft?.description || nft?.metadata?.description || null,
+            image_url: convertIpfsUrl(nft?.file_url || nft?.cached_file_url || null),
+            image_preview_url: null,
+            image_thumbnail_url: null,
+            image_original_url: null,
+            animation_url: convertIpfsUrl(nft?.animation_url || nft?.cached_animation_url || null),
+            animation_original_url: null,
+            cached_file_url: convertIpfsUrl(nft?.cached_file_url || null),
+            cached_animation_url: null,
+            creator_address: null,
+            collection: nft?.contract,
+            metadata: null,
+            owner: {
+              user: null,
+              address: wallet.toLowerCase(),
+              profileImageUrl: null,
+              config: '',
+            },
+            wallet: wallet.toLowerCase(),
+          };
+        }),
         continuation: item.continuation,
         count: item.total,
       };
@@ -531,24 +528,24 @@ export class NftPortClient {
     }
   };
 
-  public getAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
+  public getAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<NftPortAssetExtended> => {
     try {
       const result = await this.sendGetRequest(`${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}&refresh_metadata=true`);
       if (!result || (result && result?.response !== "OK") || (result && !result?.nft) || (result && !result?.owner)) {
         return null;
       }
-      return await nftportAssetToCollectible({
+      return {
         token_id: result.nft?.token_id,
         contract_address: result.nft?.contract_address,
         name: result.nft?.name || result.nft?.metadata?.name || null,
         description: result.nft?.description || result.nft?.metadata?.description || null,
-        image_url: result.nft?.file_url || result.nft?.cached_file_url || null,
+        image_url: convertIpfsUrl(result.nft?.file_url || result.nft?.cached_file_url || null),
         image_preview_url: null,
         image_thumbnail_url: null,
         image_original_url: null,
-        animation_url: result.nft?.animation_url || result.nft?.cached_animation_url || null,
+        animation_url: convertIpfsUrl(result.nft?.animation_url || result.nft?.cached_animation_url || null),
         animation_original_url: null,
-        cached_file_url: result.nft?.cached_file_url || null,
+        cached_file_url: convertIpfsUrl(result.nft?.cached_file_url || null),
         cached_animation_url: null,
         creator_address: null,
         collection: result?.contract,
@@ -560,7 +557,7 @@ export class NftPortClient {
           config: '',
         },
         wallet: result.owner.toLowerCase(),
-      });
+      };
     } catch (e) {
       return null;
     }

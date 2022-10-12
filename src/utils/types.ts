@@ -1,3 +1,4 @@
+import { NftPortAssetExtended } from '../eth/types';
 import { Nullable } from 'utils/typeUtils'
 
 export type Chain = 'eth' | 'sol'
@@ -38,7 +39,7 @@ export type Collectible = {
 }
 
 export type NftPortCollectiblePaginationDto = {
-  data: Collectible[],
+  data: NftPortAssetExtended[],
   continuation?: string,
   count: number;
 }

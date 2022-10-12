@@ -107,7 +107,7 @@ export const isAssetValid = (asset: OpenSeaAssetExtended | NftPortAssetExtended)
 
 export const IPFS_GATEWAY = 'https://balance.mypinata.cloud/ipfs';
 
-const convertIpfsUrl = (url: string): string => {
+export const convertIpfsUrl = (url: string): string => {
   if (!url) {
     return null;
   }

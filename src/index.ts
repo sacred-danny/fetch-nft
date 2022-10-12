@@ -9,6 +9,7 @@ import {
 } from 'utils/types';
 
 import 'cross-fetch/polyfill'
+import { NftPortAssetExtended } from './eth/types';
 
 type FetchNFTClientProps = {
   openSeaConfig?: OpenSeaClientProps,
@@ -58,7 +59,7 @@ export class FetchNFTClient {
     return await this.openSeaClient.getAssetDetail(assetContractAddress, tokenId);
   }
 
-  public getAssetDetailFromNftPort = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
+  public getAssetDetailFromNftPort = async (assetContractAddress: string, tokenId: string): Promise<NftPortAssetExtended> => {
     return await this.nftPortClient.getAssetDetail(assetContractAddress, tokenId);
   }
 
