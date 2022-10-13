@@ -59,6 +59,7 @@ export type NftPortAsset = {
   contract_address: string
   name: Nullable<string>
   description: Nullable<string>
+  file_url : Nullable<string>
   image_url: Nullable<string>
   image_preview_url: Nullable<string>
   image_thumbnail_url: Nullable<string>

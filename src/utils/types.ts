@@ -36,6 +36,7 @@ export type Collectible = {
   collection?: any
   owner?: any
   status?: AssetStatus
+  originalUrl?: string,
 }
 
 export type NftPortCollectiblePaginationDto = {
