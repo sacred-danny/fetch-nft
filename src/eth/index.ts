@@ -405,8 +405,7 @@ export class NftPortClient {
   }
 
   private sendGetRequest = async (url = '') => {
-    const http = rateLimit(axios.create(), { maxRequests: 30, perMilliseconds: 1000 });
-    const response = await http.get(url, {
+    const response = await axios.get(url, {
       method: 'GET', // *GET, POST, PUT, DELETE, etc.
       headers: {
         'Content-Type': 'application/json',
