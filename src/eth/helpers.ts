@@ -111,7 +111,9 @@ export const convertIpfsUrl = (url: string): string => {
   if (!url) {
     return null;
   }
-  if (url.startsWith('ipfs://')) {
+  if (url.startsWith('ipfs://ipfs/')) {
+    return `${IPFS_GATEWAY}/${url.replace('ipfs://ipfs/', '')}`;
+  } else if (url.startsWith('ipfs://')) {
     return `${IPFS_GATEWAY}/${url.replace('ipfs://', '')}`;
   } else {
     const subUrls = url.split('ipfs/');
