@@ -61,6 +61,7 @@ module.exports = {
     'prettier/prettier': ['error', { singleQuote: true, jsxSingleQuote: true }],
     quotes: ['error', 'single'],
     semi: ['error', 'always'],
+    camelcase: 'off',
     'import/order': [
       'error',
       {

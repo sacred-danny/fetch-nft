@@ -1,10 +1,12 @@
 import axios from 'axios';
+
 import {
   isAssetValid,
   assetToCollectible,
   creationEventToCollectible,
   transferEventToCollectible,
-  isFromNullAddress, convertIpfsUrl,
+  isFromNullAddress,
+  convertIpfsUrl,
 } from 'eth/helpers';
 import {
   NftPortAssetExtended,
@@ -17,34 +19,40 @@ import {
   Collectible,
   CollectibleState,
   CollectionInfo,
-  NftPortCollectiblePaginationDto, NftPortCollectionPaginationDto,
+  NftPortCollectiblePaginationDto,
+  NftPortCollectionPaginationDto,
 } from 'utils/types';
 
 const OPENSEA_API_URL = 'https://api.opensea.io/api/v1';
 const NFT_PORT_API_URL = 'https://api.nftport.xyz';
 
-type AssetEventData = { asset_events: OpenSeaEvent[] }
-type AssetEventResult = PromiseSettledResult<AssetEventData>
-type AssetEventFulfilledResult = PromiseFulfilledResult<AssetEventData>
+type AssetEventData = { asset_events: OpenSeaEvent[] };
+type AssetEventResult = PromiseSettledResult<AssetEventData>;
+type AssetEventFulfilledResult = PromiseFulfilledResult<AssetEventData>;
 
-const parseAssetEventResults = (results: AssetEventResult[], wallets: string[]) => {
+const parseAssetEventResults = (
+  results: AssetEventResult[],
+  wallets: string[]
+) => {
   return results
     .map((result, i) => ({ result, wallet: wallets[i] }))
     .filter(({ result }) => result.status === 'fulfilled')
     .map(
       ({ result, wallet }) =>
-        (result as AssetEventFulfilledResult).value.asset_events?.map(event => ({
-          ...event,
-          asset: { ...event.asset, wallet },
-          wallet,
-        })) || [],
+        (result as AssetEventFulfilledResult).value.asset_events?.map(
+          (event) => ({
+            ...event,
+            asset: { ...event.asset, wallet },
+            wallet,
+          })
+        ) || []
     )
     .flat();
 };
 
-type AssetData = { assets: OpenSeaAsset[] }
-type AssetResult = PromiseSettledResult<AssetData>
-type AssetFulfilledResult = PromiseFulfilledResult<AssetData>
+type AssetData = { assets: OpenSeaAsset[] };
+type AssetResult = PromiseSettledResult<AssetData>;
+type AssetFulfilledResult = PromiseFulfilledResult<AssetData>;
 
 const parseAssetResults = (results: AssetResult[], wallets: string[]) => {
   return results
@@ -52,25 +60,28 @@ const parseAssetResults = (results: AssetResult[], wallets: string[]) => {
     .filter(({ result }) => result.status === 'fulfilled')
     .map(
       ({ result, wallet }) =>
-        (result as AssetFulfilledResult).value.assets?.map(asset => ({ ...asset, wallet })) || [],
+        (result as AssetFulfilledResult).value.assets?.map((asset) => ({
+          ...asset,
+          wallet,
+        })) || []
     )
     .flat();
 };
 
 export type OpenSeaClientProps = {
-  apiEndpoint?: string
-  apiKey?: string
-  assetLimit?: number
-  eventLimit?: number
-}
+  apiEndpoint?: string;
+  apiKey?: string;
+  assetLimit?: number;
+  eventLimit?: number;
+};
 
 export type NftPortClientProps = {
-  apiEndpoint?: string
-  apiKey?: string
-  assetLimit?: number
-  eventLimit?: number
-  chain?: string
-}
+  apiEndpoint?: string;
+  apiKey?: string;
+  assetLimit?: number;
+  eventLimit?: number;
+  chain?: string;
+};
 
 export class OpenSeaClient {
   readonly url: string = OPENSEA_API_URL;
@@ -104,47 +115,60 @@ export class OpenSeaClient {
 
   private getTransferredCollectiblesForWallet = async (
     wallet: string,
-    limit = this.eventLimit,
+    limit = this.eventLimit
   ): Promise<AssetEventData> => {
-    return this.sendGetRequest(`${this.url}/events?account_address=${wallet}&limit=${limit}&event_type=transfer&only_opensea=false`).then(r => r);
+    return this.sendGetRequest(
+      `${this.url}/events?account_address=${wallet}&limit=${limit}&event_type=transfer&only_opensea=false`
+    ).then((r) => r);
   };
 
   private getTransferredCollectiblesForMultipleWallets = async (
     wallets: string[],
-    limit = this.eventLimit,
+    limit = this.eventLimit
   ): Promise<OpenSeaEventExtended[]> => {
     return Promise.allSettled(
-      wallets.map(wallet => this.getTransferredCollectiblesForWallet(wallet, limit)),
-    ).then(results => parseAssetEventResults(results, wallets));
+      wallets.map((wallet) =>
+        this.getTransferredCollectiblesForWallet(wallet, limit)
+      )
+    ).then((results) => parseAssetEventResults(results, wallets));
   };
 
   private getCreatedCollectiblesForWallet = async (
     wallet: string,
-    limit = this.eventLimit,
+    limit = this.eventLimit
   ): Promise<AssetEventData> => {
-    return this.sendGetRequest(`${this.url}/events?account_address=${wallet}&limit=${limit}&event_type=created&only_opensea=false`).then(r => r);
-
+    return this.sendGetRequest(
+      `${this.url}/events?account_address=${wallet}&limit=${limit}&event_type=created&only_opensea=false`
+    ).then((r) => r);
   };
 
   private getCreatedCollectiblesForMultipleWallets = async (
     wallets: string[],
-    limit = this.eventLimit,
+    limit = this.eventLimit
   ): Promise<OpenSeaEventExtended[]> => {
     return Promise.allSettled(
-      wallets.map(wallet => this.getCreatedCollectiblesForWallet(wallet, limit)),
-    ).then(results => parseAssetEventResults(results, wallets));
+      wallets.map((wallet) =>
+        this.getCreatedCollectiblesForWallet(wallet, limit)
+      )
+    ).then((results) => parseAssetEventResults(results, wallets));
   };
 
   private getCollectiblesForWallet = async (
     wallet: string,
-    limit = this.assetLimit,
+    limit = this.assetLimit
   ): Promise<AssetData> => {
     let offset = 0;
     let result: any[] = [];
     try {
       while (1) {
-        const item = await this.sendGetRequest(`${this.url}/assets?owner=${wallet}&offset=${offset}&limit=${limit}`);
-        if (!item || (item && !item.assets) || (item && item.assets && item.assets.length === 0)) {
+        const item = await this.sendGetRequest(
+          `${this.url}/assets?owner=${wallet}&offset=${offset}&limit=${limit}`
+        );
+        if (
+          !item ||
+          (item && !item.assets) ||
+          (item && item.assets && item.assets.length === 0)
+        ) {
           break;
         }
         result = [...result, ...item.assets];
@@ -152,26 +176,39 @@ export class OpenSeaClient {
       }
     } catch (e) {
       console.log(e);
-    } finally {
-      return { assets: result };
     }
+    return { assets: result };
   };
 
   public getCollectiblesForWalletByContractAddressesAndTokenIds = async (
     wallet: string,
     contractAddresses: string[],
-    tokenIds: string[],
+    tokenIds: string[]
   ): Promise<Collectible[]> => {
-    if (!contractAddresses.length || !tokenIds.length || contractAddresses.length !== tokenIds.length) {
+    if (
+      !contractAddresses.length ||
+      !tokenIds.length ||
+      contractAddresses.length !== tokenIds.length
+    ) {
       return [];
     }
-    let result = [];
+    const result = [];
     let url = `${this.url}/assets?owner=${wallet}`;
-    url = contractAddresses.reduce((prev, current) => prev + `&asset_contract_addresses=${current}`, url);
-    url = tokenIds.reduce((prev, current) => prev + `&token_ids=${current}`, url);
+    url = contractAddresses.reduce(
+      (prev, current) => prev + `&asset_contract_addresses=${current}`,
+      url
+    );
+    url = tokenIds.reduce(
+      (prev, current) => prev + `&token_ids=${current}`,
+      url
+    );
     try {
       const item = await this.sendGetRequest(url);
-      if (!item || (item && !item.assets) || (item && item.assets && item.assets.length === 0)) {
+      if (
+        !item ||
+        (item && !item.assets) ||
+        (item && item.assets && item.assets.length === 0)
+      ) {
         return [];
       }
       for await (const asset of item.assets) {
@@ -187,16 +224,21 @@ export class OpenSeaClient {
 
   private getCollectiblesForMultipleWallets = async (
     wallets: string[],
-    limit = this.assetLimit,
+    limit = this.assetLimit
   ): Promise<OpenSeaAssetExtended[]> => {
     return Promise.allSettled(
-      wallets.map(wallet => this.getCollectiblesForWallet(wallet, limit)),
-    ).then(results => parseAssetResults(results, wallets));
+      wallets.map((wallet) => this.getCollectiblesForWallet(wallet, limit))
+    ).then((results) => parseAssetResults(results, wallets));
   };
 
-  public getCollection = async (assetContractAddress: string, tokenId: string): Promise<CollectionInfo> => {
+  public getCollection = async (
+    assetContractAddress: string,
+    tokenId: string
+  ): Promise<CollectionInfo> => {
     try {
-      const result = await this.sendGetRequest(`${this.url}/asset/${assetContractAddress}/${tokenId}`);
+      const result = await this.sendGetRequest(
+        `${this.url}/asset/${assetContractAddress}/${tokenId}`
+      );
       if (!result) {
         return null;
       }
@@ -204,8 +246,15 @@ export class OpenSeaClient {
         name: result?.collection?.name || '',
         slug: result?.collection?.slug || '',
         imageUrl: result?.collection?.image_url || '',
-        contractAddress: (result?.collection?.primary_asset_contracts || []).reduce((prev: any, current: any) => (prev?.address || '') + `${prev?.address ? ',' : ''}` + (current?.address || ''), '') || '',
-        safeListRequestStatus: result?.collection?.safelist_request_status,
+        contractAddress:
+          (result?.collection?.primary_asset_contracts || []).reduce(
+            (prev: any, current: any) =>
+              (prev?.address || '') +
+              `${prev?.address ? ',' : ''}` +
+              (current?.address || ''),
+            ''
+          ) || '',
+        verified: result?.collection?.safelist_request_status === 'verified',
         openListingCount: 0,
         closeListingCount: 0,
         openLoanCount: 0,
@@ -217,37 +266,56 @@ export class OpenSeaClient {
     }
   };
 
-  public getAllCollections = async (wallet: string, limit = this.assetLimit): Promise<CollectionInfo[]> => {
+  public getAllCollections = async (
+    wallet: string,
+    limit = this.assetLimit
+  ): Promise<CollectionInfo[]> => {
     let offset = 0;
     let result: any[] = [];
     try {
       while (1) {
-        const response = await this.sendGetRequest(`${this.url}/collections?asset_owner=${wallet}&offset=${offset}&limit=${limit}`);
+        const response = await this.sendGetRequest(
+          `${this.url}/collections?asset_owner=${wallet}&offset=${offset}&limit=${limit}`
+        );
         if (!response || (response && !response.length)) {
           break;
         }
-        result = [...result, ...response.map((item: any) => {
-          return {
-            name: item.name || '',
-            slug: item?.slug || '',
-            imageUrl: item?.image_url || '',
-            contractAddress: (item?.primary_asset_contracts || []).reduce((prev: any, current: any) => (prev?.address || '') + `${prev?.address ? ',' : ''}` + (current?.address || ''), '') || '',
-            safeListRequestStatus: item?.safelist_request_status || '',
-            numNftsOwned: item?.owned_asset_count || 0,
-          };
-        })];
+        result = [
+          ...result,
+          ...response.map((item: any) => {
+            return {
+              name: item.name || '',
+              slug: item?.slug || '',
+              imageUrl: item?.image_url || '',
+              contractAddress:
+                (item?.primary_asset_contracts || []).reduce(
+                  (prev: any, current: any) =>
+                    (prev?.address || '') +
+                    `${prev?.address ? ',' : ''}` +
+                    (current?.address || ''),
+                  ''
+                ) || '',
+              safeListRequestStatus: item?.safelist_request_status || '',
+              numNftsOwned: item?.owned_asset_count || 0,
+            };
+          }),
+        ];
         offset += limit;
       }
     } catch (e) {
       console.log(e);
-    } finally {
-      return result;
     }
+    return result;
   };
 
-  public getAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<Collectible> => {
+  public getAssetDetail = async (
+    assetContractAddress: string,
+    tokenId: string
+  ): Promise<Collectible> => {
     try {
-      const result = await this.sendGetRequest(`${this.url}/asset/${assetContractAddress}/${tokenId}`);
+      const result = await this.sendGetRequest(
+        `${this.url}/asset/${assetContractAddress}/${tokenId}`
+      );
       if (!result || (result && result.success === false)) {
         return null;
       }
@@ -258,9 +326,14 @@ export class OpenSeaClient {
     }
   };
 
-  public getAssetOwner = async (assetContractAddress: string, tokenId: string): Promise<string> => {
+  public getAssetOwner = async (
+    assetContractAddress: string,
+    tokenId: string
+  ): Promise<string> => {
     try {
-      const result = await this.sendGetRequest(`${this.url}/asset/${assetContractAddress}/${tokenId}`);
+      const result = await this.sendGetRequest(
+        `${this.url}/asset/${assetContractAddress}/${tokenId}`
+      );
       return result?.owner?.address || null;
     } catch (e) {
       console.log(e);
@@ -268,36 +341,38 @@ export class OpenSeaClient {
     }
   };
 
-  public getAllCollectibles = async (wallets: string[]): Promise<CollectibleState> => {
+  public getAllCollectibles = async (
+    wallets: string[]
+  ): Promise<CollectibleState> => {
     return Promise.all([
       this.getCollectiblesForMultipleWallets(wallets),
       this.getCreatedCollectiblesForMultipleWallets(wallets),
       this.getTransferredCollectiblesForMultipleWallets(wallets),
     ]).then(async ([assets, creationEvents, transferEvents]) => {
       const filteredAssets = assets.filter(
-        asset => asset && isAssetValid(asset),
+        (asset) => asset && isAssetValid(asset)
       );
       const collectibles = await Promise.all(
-        filteredAssets.map(async asset => await assetToCollectible(asset)),
+        filteredAssets.map(async (asset) => await assetToCollectible(asset))
       );
       const collectiblesMap: {
-        [key: string]: Collectible
+        [key: string]: Collectible;
       } = collectibles.reduce(
         (acc, curr) => ({
           ...acc,
           [curr.id]: curr,
         }),
-        {},
+        {}
       );
       const ownedCollectibleKeySet = new Set(Object.keys(collectiblesMap));
 
       // Handle transfers from NullAddress as if they were created events
       const firstOwnershipTransferEvents = transferEvents
         .filter(
-          event =>
+          (event) =>
             event?.asset &&
             isAssetValid(event.asset) &&
-            isFromNullAddress(event),
+            isFromNullAddress(event)
         )
         .reduce((acc: { [key: string]: OpenSeaEventExtended }, curr) => {
           const { token_id, asset_contract } = curr.asset;
@@ -311,7 +386,7 @@ export class OpenSeaClient {
           return { ...acc, [id]: curr };
         }, {});
       await Promise.all(
-        Object.entries(firstOwnershipTransferEvents).map(async entry => {
+        Object.entries(firstOwnershipTransferEvents).map(async (entry) => {
           const [id, event] = entry;
           if (ownedCollectibleKeySet.has(id)) {
             collectiblesMap[id] = {
@@ -320,17 +395,20 @@ export class OpenSeaClient {
             };
           } else {
             ownedCollectibleKeySet.add(id);
-            collectiblesMap[id] = await transferEventToCollectible(event, false);
+            collectiblesMap[id] = await transferEventToCollectible(
+              event,
+              false
+            );
           }
           return event;
-        }),
+        })
       );
 
       // Handle created events
       await Promise.all(
         creationEvents
-          .filter(event => event?.asset && isAssetValid(event.asset))
-          .map(async event => {
+          .filter((event) => event?.asset && isAssetValid(event.asset))
+          .map(async (event) => {
             const { token_id, asset_contract } = event.asset;
             const id = `${token_id}:::${asset_contract?.address ?? ''}`;
             if (!ownedCollectibleKeySet.has(id)) {
@@ -338,16 +416,16 @@ export class OpenSeaClient {
               ownedCollectibleKeySet.add(id);
             }
             return event;
-          }),
+          })
       );
 
       // Handle transfers
       const latestTransferEventsMap = transferEvents
         .filter(
-          event =>
+          (event) =>
             event?.asset &&
             isAssetValid(event.asset) &&
-            !isFromNullAddress(event),
+            !isFromNullAddress(event)
         )
         .reduce((acc: { [key: string]: OpenSeaEventExtended }, curr) => {
           const { token_id, asset_contract } = curr.asset;
@@ -361,7 +439,7 @@ export class OpenSeaClient {
           return { ...acc, [id]: curr };
         }, {});
       await Promise.all(
-        Object.values(latestTransferEventsMap).map(async event => {
+        Object.values(latestTransferEventsMap).map(async (event) => {
           const { token_id, asset_contract } = event.asset;
           const id = `${token_id}:::${asset_contract?.address ?? ''}`;
           if (ownedCollectibleKeySet.has(id)) {
@@ -374,7 +452,7 @@ export class OpenSeaClient {
             collectiblesMap[id] = await transferEventToCollectible(event);
           }
           return event;
-        }),
+        })
       );
 
       return Object.values(collectiblesMap).reduce(
@@ -384,7 +462,7 @@ export class OpenSeaClient {
             collectible,
           ]),
         }),
-        {} as CollectibleState,
+        {} as CollectibleState
       );
     });
   };
@@ -399,7 +477,11 @@ export class NftPortClient {
   constructor(props?: NftPortClientProps) {
     this.url = props?.apiEndpoint ?? this.url;
     this.apiKey = props?.apiKey ?? this.apiKey;
-    this.assetLimit = props?.assetLimit ? (props?.assetLimit > this.assetLimit ? this.assetLimit : props?.assetLimit) : this.assetLimit;
+    this.assetLimit = props?.assetLimit
+      ? props?.assetLimit > this.assetLimit
+        ? this.assetLimit
+        : props?.assetLimit
+      : this.assetLimit;
     this.chain = props?.chain ?? this.chain;
   }
 
@@ -408,7 +490,7 @@ export class NftPortClient {
       method: 'GET', // *GET, POST, PUT, DELETE, etc.
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': this.apiKey,
+        Authorization: this.apiKey,
       },
     });
     return response.data || null;
@@ -419,11 +501,23 @@ export class NftPortClient {
     contractAddress: string,
     limit = this.assetLimit,
     continuation: string,
-    exclude1155 = true,
+    exclude1155 = true
   ): Promise<NftPortCollectiblePaginationDto> => {
     try {
-      const item = await this.sendGetRequest(`${this.url}/v0/accounts/${wallet}${exclude1155 ? '?exclude=erc1155&' : '?'}chain=${this.chain}&include=metadata&include=contract_information&page_size=${limit}${continuation ? ('&continuation=' + continuation) : ''}${contractAddress ? ('&contract_address=' + contractAddress) : ''}`);
-      if (!item || (item && !item?.nfts) || (item && item?.nfts && item.nfts?.length === 0)) {
+      const item = await this.sendGetRequest(
+        `${this.url}/v0/accounts/${wallet}${
+          exclude1155 ? '?exclude=erc1155&' : '?'
+        }chain=${
+          this.chain
+        }&include=metadata&include=contract_information&page_size=${limit}${
+          continuation ? '&continuation=' + continuation : ''
+        }${contractAddress ? '&contract_address=' + contractAddress : ''}`
+      );
+      if (
+        !item ||
+        (item && !item?.nfts) ||
+        (item && item?.nfts && item.nfts?.length === 0)
+      ) {
         return {
           data: [],
           continuation: null,
@@ -437,12 +531,18 @@ export class NftPortClient {
             contract_address: nft?.contract_address,
             name: nft?.name || nft?.metadata?.name || null,
             description: nft?.description || nft?.metadata?.description || null,
-            file_url: convertIpfsUrl(nft?.file_url || nft?.cached_file_url || null),
-            image_url: convertIpfsUrl(nft?.file_url || nft?.cached_file_url || null),
+            file_url: convertIpfsUrl(
+              nft?.file_url || nft?.cached_file_url || null
+            ),
+            image_url: convertIpfsUrl(
+              nft?.file_url || nft?.cached_file_url || null
+            ),
             image_preview_url: null,
             image_thumbnail_url: null,
             image_original_url: null,
-            animation_url: convertIpfsUrl(nft?.animation_url || nft?.cached_animation_url || null),
+            animation_url: convertIpfsUrl(
+              nft?.animation_url || nft?.cached_animation_url || null
+            ),
             animation_original_url: null,
             cached_file_url: convertIpfsUrl(nft?.cached_file_url || null),
             cached_animation_url: null,
@@ -470,9 +570,14 @@ export class NftPortClient {
     }
   };
 
-  public getCollection = async (assetContractAddress: string, tokenId: string): Promise<CollectionInfo> => {
+  public getCollection = async (
+    assetContractAddress: string,
+    tokenId: string
+  ): Promise<CollectionInfo> => {
     try {
-      const result = await this.sendGetRequest(`${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}&refresh_metadata=true`);
+      const result = await this.sendGetRequest(
+        `${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}&refresh_metadata=true`
+      );
       if (!result) {
         return null;
       }
@@ -481,7 +586,7 @@ export class NftPortClient {
         slug: result?.contract?.slug || '',
         imageUrl: result?.contract?.metadata?.thumbnail_url || '',
         contractAddress: result?.nft?.contract_address,
-        safeListRequestStatus: '',
+        verified: undefined, // nftport doesn't have this info, but we don't want to overwrite info provided by opensea
         openListingCount: 0,
         closeListingCount: 0,
         openLoanCount: 0,
@@ -493,10 +598,24 @@ export class NftPortClient {
     }
   };
 
-  public getCollections = async (wallet: string, limit: number, continuation: string): Promise<NftPortCollectionPaginationDto> => {
+  public getCollections = async (
+    wallet: string,
+    limit: number,
+    continuation: string
+  ): Promise<NftPortCollectionPaginationDto> => {
     try {
-      const item: any = await this.sendGetRequest(`${this.url}/v0/accounts/contracts/${wallet}?chain=${this.chain}&type=owns_contract_nfts&page_size=${limit ? limit : this.assetLimit}${continuation ? ('&continuation=' + continuation) : ''}`);
-      if (!item || (item && !item?.contracts) || (item && item?.contracts && item?.contracts.length === 0)) {
+      const item: any = await this.sendGetRequest(
+        `${this.url}/v0/accounts/contracts/${wallet}?chain=${
+          this.chain
+        }&type=owns_contract_nfts&page_size=${limit || this.assetLimit}${
+          continuation ? '&continuation=' + continuation : ''
+        }`
+      );
+      if (
+        !item ||
+        (item && !item?.contracts) ||
+        (item && item?.contracts && item?.contracts.length === 0)
+      ) {
         return {
           data: [],
           continuation: null,
@@ -527,23 +646,40 @@ export class NftPortClient {
     }
   };
 
-  public getAssetDetail = async (assetContractAddress: string, tokenId: string): Promise<NftPortAssetExtended> => {
+  public getAssetDetail = async (
+    assetContractAddress: string,
+    tokenId: string
+  ): Promise<NftPortAssetExtended> => {
     try {
-      const result = await this.sendGetRequest(`${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}&refresh_metadata=true`);
-      if (!result || (result && result?.response !== "OK") || (result && !result?.nft) || (result && !result?.owner)) {
+      const result = await this.sendGetRequest(
+        `${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}&refresh_metadata=true`
+      );
+      if (
+        !result ||
+        (result && result?.response !== 'OK') ||
+        (result && !result?.nft) ||
+        (result && !result?.owner)
+      ) {
         return null;
       }
       return {
         token_id: result.nft?.token_id,
         contract_address: result.nft?.contract_address,
         name: result.nft?.name || result.nft?.metadata?.name || null,
-        description: result.nft?.description || result.nft?.metadata?.description || null,
-        file_url: convertIpfsUrl(result.nft?.file_url || result.nft?.cached_file_url || null),
-        image_url: convertIpfsUrl(result.nft?.file_url || result.nft?.cached_file_url || null),
+        description:
+          result.nft?.description || result.nft?.metadata?.description || null,
+        file_url: convertIpfsUrl(
+          result.nft?.file_url || result.nft?.cached_file_url || null
+        ),
+        image_url: convertIpfsUrl(
+          result.nft?.file_url || result.nft?.cached_file_url || null
+        ),
         image_preview_url: null,
         image_thumbnail_url: null,
         image_original_url: null,
-        animation_url: convertIpfsUrl(result.nft?.animation_url || result.nft?.cached_animation_url || null),
+        animation_url: convertIpfsUrl(
+          result.nft?.animation_url || result.nft?.cached_animation_url || null
+        ),
         animation_original_url: null,
         cached_file_url: convertIpfsUrl(result.nft?.cached_file_url || null),
         cached_animation_url: null,
@@ -563,12 +699,16 @@ export class NftPortClient {
     }
   };
 
-  public getAssetOwner = async (assetContractAddress: string, tokenId: string): Promise<string> => {
-    const result = await this.sendGetRequest(`${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}`);
+  public getAssetOwner = async (
+    assetContractAddress: string,
+    tokenId: string
+  ): Promise<string> => {
+    const result = await this.sendGetRequest(
+      `${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}`
+    );
     if (result && result.owner) {
       return result?.owner;
     }
     return null;
   };
-
 }
