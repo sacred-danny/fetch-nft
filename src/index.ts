@@ -40,10 +40,14 @@ export class FetchNFTClient {
     if (isDev) {
       return await this.nftPortClient.getCollection(assetContractAddress, tokenId);
     } else {
-      let openSeaCollection, nftPorCollection;
-      openSeaCollection = await this.openSeaClient.getCollection(assetContractAddress, tokenId);
-      nftPorCollection = await this.nftPortClient.getCollection(assetContractAddress, tokenId);
-      return openSeaCollection || nftPorCollection;
+      return await Promise.all(
+        [
+          this.openSeaClient.getCollection(assetContractAddress, tokenId), 
+          this.nftPortClient.getCollection(assetContractAddress, tokenId)
+        ]
+      ).then(([openSeaCollection, nftPorCollection]) => {
+        return openSeaCollection || nftPorCollection;
+      });        
     }
   }
 
