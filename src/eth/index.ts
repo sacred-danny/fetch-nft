@@ -529,7 +529,7 @@ export class NftPortClient {
           return {
             token_id: nft?.token_id,
             contract_address: nft?.contract_address,
-            name: nft?.name || nft?.metadata?.name || null,
+            name: nft?.name || nft?.metadata?.name || (`${nft?.contract?.name} #${nft?.token_id}`) || null,
             description: nft?.description || nft?.metadata?.description || null,
             file_url: convertIpfsUrl(
               nft?.file_url || nft?.cached_file_url || null
@@ -665,7 +665,7 @@ export class NftPortClient {
       return {
         token_id: result.nft?.token_id,
         contract_address: result.nft?.contract_address,
-        name: result.nft?.name || result.nft?.metadata?.name || null,
+        name: result.nft?.name || result.nft?.metadata?.name || (`${result?.contract?.name} #${result.nft?.token_id}`) || null,
         description:
           result.nft?.description || result.nft?.metadata?.description || null,
         file_url: convertIpfsUrl(
