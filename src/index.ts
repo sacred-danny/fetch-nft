@@ -64,6 +64,12 @@ export class FetchNFTClient {
     });
   };
 
+  public getAvailableEthereumCollectionTokenId = async (
+    assetContractAddress: string,
+  ): Promise<string> => {
+    return await this.nftPortClient.getAvailableEthereumCollectionTokenId(assetContractAddress);
+  };
+
   public getAllCollectionsFromOpenSea = async (
     wallet: string
   ): Promise<CollectionInfo[]> => {

@@ -654,6 +654,7 @@ export class NftPortClient {
       const result = await this.sendGetRequest(
         `${this.url}/v0/nfts/${assetContractAddress}/${tokenId}?chain=${this.chain}&refresh_metadata=true`
       );
+      console.log('result: ', result);
       if (
         !result ||
         (result && result?.response !== 'OK') ||
@@ -710,5 +711,18 @@ export class NftPortClient {
       return result?.owner;
     }
     return null;
+  };
+
+  public getAvailableEthereumCollectionTokenId = async (
+    assetContractAddress: string
+  ): Promise<string> => {
+    const result = await this.sendGetRequest(
+      `${this.url}/v0/nfts/${assetContractAddress}?chain=${this.chain}&include=metadata&refresh_metadata=true`
+    );
+    if (!result || (result && !result?.nfts.length)) {
+      return null;
+    }
+    const hasAvailableItem = result?.nfts.find((item: any) => item?.file_url && !item?.metadata?.message);
+    return hasAvailableItem ? (hasAvailableItem?.token_id || null) : null;
   };
 }
